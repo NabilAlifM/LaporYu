@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('kode_wilayah')->nullable();
             $table->foreignId('instansi_id')->nullable()->constrained('instansis')->onDelete('set null');
             $table->enum('status', ['baru', 'diproses', 'selesai', 'ditolak'])->default('baru');
-            $table->integer('likes_count')->default(0);
+            $table->integer('upvotes_count')->default(0);
             $table->integer('comments_count')->default(0);
             $table->timestamps();
         });

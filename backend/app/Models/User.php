@@ -32,9 +32,9 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 
-    public function likes()
+    public function upvotes()
     {
-        return $this->hasMany(Like::class);
+        return $this->hasMany(Upvote::class);
     }
 
     public function conversations()
