@@ -1,8 +1,8 @@
 import { Outlet, Navigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { LogOut, Home, FileText, User as UserIcon } from 'lucide-react';
+import { LogOut, Home, FileText, Settings, BarChart2 } from 'lucide-react';
 
-export default function MainLayout() {
+export default function InstansiLayout() {
     const { user, isInitialized, logout } = useAuthStore();
 
     if (!isInitialized) {
@@ -13,26 +13,34 @@ export default function MainLayout() {
         return <Navigate to="/login" replace />;
     }
 
+    if (user.role !== 'instansi') {
+        return <Navigate to="/" replace />;
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
             {/* Sidebar */}
             <aside className="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col">
                 <div className="p-6">
-                    <h1 className="text-2xl font-bold text-primary">LaporYu</h1>
+                    <h1 className="text-2xl font-bold text-primary">Dasbor Instansi</h1>
                 </div>
                 
                 <nav className="flex-1 px-4 space-y-2">
-                    <Link to="/dashboard" className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium">
+                    <Link to="/instansi/dashboard" className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium">
                         <Home size={20} />
-                        <span>Dashboard</span>
+                        <span>Beranda</span>
                     </Link>
-                    <Link to="/reports" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+                    <Link to="/instansi/reports" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
                         <FileText size={20} />
-                        <span>Laporan Saya</span>
+                        <span>Laporan Masuk</span>
                     </Link>
-                    <Link to="/profile" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
-                        <UserIcon size={20} />
-                        <span>Profil</span>
+                    <Link to="/instansi/statistics" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+                        <BarChart2 size={20} />
+                        <span>Statistik</span>
+                    </Link>
+                    <Link to="/instansi/settings" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+                        <Settings size={20} />
+                        <span>Pengaturan</span>
                     </Link>
                 </nav>
                 
@@ -43,7 +51,7 @@ export default function MainLayout() {
                         </div>
                         <div className="overflow-hidden">
                             <p className="text-sm font-medium truncate">{user.name}</p>
-                            <p className="text-xs text-slate-500 truncate capitalize">{user.role}</p>
+                            <p className="text-xs text-slate-500 truncate capitalize">Instansi</p>
                         </div>
                     </div>
                     <button 
@@ -51,7 +59,7 @@ export default function MainLayout() {
                         className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                     >
                         <LogOut size={16} />
-                        <span>Logout</span>
+                        <span>Keluar</span>
                     </button>
                 </div>
             </aside>
