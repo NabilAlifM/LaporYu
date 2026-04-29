@@ -3,7 +3,7 @@ import { useState } from 'react';
 import axios from '@/lib/axios';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
-import { Heart, MessageCircle, Send, MapPin, Image as ImageIcon } from 'lucide-react';
+import { Heart, MessageCircle, Send, MapPin, Image as ImageIcon, IdCard, Eye, EyeOff } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getReports } from '@/services/api';
 
@@ -89,6 +89,10 @@ export function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [nik, setNik] = useState('');
+    const [fotoKtp, setFotoKtp] = useState<File | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { fetchUser } = useAuthStore();
@@ -112,7 +116,8 @@ export function RegisterPage() {
                 email, 
                 password,
                 password_confirmation: passwordConfirmation,
-                role: 'user' // Default register is for user/warga
+                role: 'user', // Default register is for user/warga
+                nik
             });
             await fetchUser();
             navigate('/');
@@ -160,26 +165,87 @@ export function RegisterPage() {
                 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                    <input 
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="••••••••"
-                    />
+                    <div className="relative">
+                        <input 
+                            type={showPassword ? 'text' : 'password'} 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
+                            placeholder="••••••••"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                    </div>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password</label>
+                    <div className="relative">
+                        <input 
+                            type={showPasswordConfirmation ? 'text' : 'password'} 
+                            value={passwordConfirmation}
+                            onChange={(e) => setPasswordConfirmation(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
+                            placeholder="••••••••"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                        >
+                            {showPasswordConfirmation ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">NIK (Nomor Induk Kependudukan)</label>
                     <input 
-                        type="password" 
-                        value={passwordConfirmation}
-                        onChange={(e) => setPasswordConfirmation(e.target.value)}
+                        type="text" 
+                        value={nik}
+                        onChange={(e) => setNik(e.target.value)}
                         required
+                        maxLength={16}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="••••••••"
+                        placeholder="16 Digit NIK"
                     />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Foto KTP</label>
+                    <label 
+                        htmlFor="foto-ktp-input" 
+                        className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors group"
+                    >
+                        {fotoKtp ? (
+                            <div className="text-center p-4">
+                                <ImageIcon className="mx-auto h-12 w-12 text-primary mb-2" />
+                                <p className="text-sm font-medium text-slate-700 truncate max-w-[250px]">{fotoKtp.name}</p>
+                                <p className="text-xs text-slate-400 mt-1">Klik untuk mengganti foto</p>
+                            </div>
+                        ) : (
+                            <div className="text-center p-4">
+                                <IdCard className="mx-auto h-16 w-16 text-slate-400 group-hover:text-primary transition-colors mb-3" strokeWidth={1.25} />
+                                <p className="text-sm font-semibold text-slate-700">Unggah Foto KTP</p>
+                                <p className="text-xs text-slate-400 mt-1">Ambil foto KTP Anda dengan jelas</p>
+                            </div>
+                        )}
+                        <input 
+                            id="foto-ktp-input"
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => setFotoKtp(e.target.files ? e.target.files[0] : null)}
+                            required
+                            className="hidden"
+                        />
+                    </label>
                 </div>
                 
                 <button 

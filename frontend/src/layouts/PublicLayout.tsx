@@ -31,7 +31,7 @@ export default function PublicLayout() {
                 <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 h-screen sticky top-0 bg-white">
                     <div className="p-6">
                         <Link to="/" className="flex items-center space-x-2">
-                            <span className="text-2xl font-black text-primary tracking-tighter">LAPOR<span className="text-secondary">YU</span></span>
+                            <img src="/Logo.png" alt="LaporYu Logo" className="h-10 w-auto" />
                         </Link>
                     </div>
 
@@ -73,7 +73,7 @@ export default function PublicLayout() {
                     {/* Top Header Mobile & Desktop */}
                     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 px-4 flex items-center justify-between">
                         <div className="md:hidden flex items-center">
-                             <span className="text-xl font-black text-primary tracking-tighter">LAPOR<span className="text-secondary">YU</span></span>
+                            <img src="/Logo.png" alt="LaporYu Logo" className="h-8 w-auto" />
                         </div>
                         <h1 className="text-xl font-bold text-slate-900 hidden md:block">Home</h1>
                         
