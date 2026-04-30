@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -36,13 +37,16 @@ const createCustomIcon = (isActive: boolean) => L.divIcon({
 // Component to handle map centering when a report is selected
 function MapController({ center }: { center: [number, number] | null }) {
     const map = useMap();
-    if (center) {
-        map.flyTo(center, 15, { duration: 1.5 });
-    }
+    React.useEffect(() => {
+        if (center) {
+            map.flyTo(center, 15, { duration: 1.5 });
+        }
+    }, [center, map]);
     return null;
 }
 
 export default function ExplorePage() {
+    const navigate = useNavigate();
     const [activeReportId, setActiveReportId] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -62,7 +66,7 @@ export default function ExplorePage() {
     
     // Default center (Jakarta)
     const mapCenter: [number, number] = activeReport 
-        ? [parseFloat(activeReport.latitude || '-6.2088'), parseFloat(activeReport.longitude || '106.8456')]
+        ? [(activeReport.latitude ?? -6.2088), (activeReport.longitude ?? 106.8456)]
         : [-6.2088, 106.8456];
 
     return (
@@ -77,8 +81,8 @@ export default function ExplorePage() {
                     />
                     
                     {filteredReports.map((report: Report) => {
-                        const lat = parseFloat(report.latitude || '0');
-                        const lng = parseFloat(report.longitude || '0');
+                        const lat = report.latitude ?? 0;
+                        const lng = report.longitude ?? 0;
                         
                         if (lat === 0 && lng === 0) return null;
 
@@ -159,7 +163,13 @@ export default function ExplorePage() {
                         {activeReport.media && activeReport.media.length > 0 ? (
                             <div className="h-40 w-full bg-slate-200 relative">
                                 <img 
-                                    src={`http://localhost:8000/storage/${activeReport.media[0].file_path}`}
+                                    src={
+                                        activeReport.media[0].url.startsWith('http') 
+                                            ? activeReport.media[0].url 
+                                            : activeReport.media[0].url.startsWith('/') 
+                                                ? activeReport.media[0].url 
+                                                : `http://localhost:8000/storage/${activeReport.media[0].url}`
+                                    }
                                     alt="Lokasi"
                                     className="w-full h-full object-cover"
                                 />
@@ -196,7 +206,10 @@ export default function ExplorePage() {
                                     <Navigation size={20} className="mb-1" />
                                     <span className="text-xs">Rute</span>
                                 </button>
-                                <button className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl flex flex-col items-center justify-center transition-colors">
+                                <button 
+                                    onClick={() => navigate('/')}
+                                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl flex flex-col items-center justify-center transition-colors"
+                                >
                                     <Info size={20} className="mb-1" />
                                     <span className="text-xs">Detail Laporan</span>
                                 </button>

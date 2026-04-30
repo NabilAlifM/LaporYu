@@ -8,6 +8,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import ExplorePage from './pages/ExplorePage';
 import SearchPage from './pages/SearchPage';
 import CreateReportPage from './pages/CreateReportPage';
+import MessagesPage from './pages/MessagesPage';
 
 import { useAuthStore } from './store/authStore';
 
@@ -37,6 +38,9 @@ function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/create" element={
           user ? <CreateReportPage /> : <Navigate to="/login" replace />
+        } />
+        <Route path="/messages" element={
+          user ? <MessagesPage /> : <Navigate to="/login" replace />
         } />
 
       </Route>

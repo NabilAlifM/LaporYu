@@ -129,7 +129,7 @@ export default function ReportCommentsPage() {
                                         <span className="text-[10px] text-slate-400">Baru saja</span>
                                     </div>
                                     <div className="bg-slate-50 rounded-2xl rounded-tl-none px-4 py-2 border border-slate-100">
-                                        <p className="text-sm text-slate-700 leading-relaxed">{comment.body}</p>
+                                        <p className="text-sm text-slate-700 leading-relaxed">{comment.content}</p>
                                     </div>
                                 </div>
                             </div>

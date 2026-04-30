@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search as SearchIcon, MapPin, Filter } from 'lucide-react';
+import { Search as SearchIcon, MapPin } from 'lucide-react';
 import { getReports } from '@/services/api';
 import type { Report } from '@/types/index';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function SearchPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +56,7 @@ export default function SearchPage() {
     return (
         <div className="w-full max-w-2xl mx-auto space-y-6 animate-in fade-in zoom-in duration-300">
             {/* Search Header */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sticky top-16 z-20">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
                 <div className="relative">
                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     <input 
@@ -149,7 +149,13 @@ export default function SearchPage() {
                             {report.media && report.media.length > 0 && (
                                 <div className="mt-3 w-full h-40 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
                                     <img 
-                                        src={`http://localhost:8000/storage/${report.media[0].file_path}`} 
+                                        src={
+                                            report.media[0].url.startsWith('http') 
+                                                ? report.media[0].url 
+                                                : report.media[0].url.startsWith('/') 
+                                                    ? report.media[0].url 
+                                                    : `http://localhost:8000/storage/${report.media[0].url}`
+                                        } 
                                         alt="Lampiran laporan" 
                                         className="w-full h-full object-cover"
                                     />

@@ -13,12 +13,11 @@ export default function MobileCommentsModal() {
     const queryClient = useQueryClient();
     const [newComment, setNewComment] = useState('');
 
-    if (!isCommentsOpen) return null;
-
     const { data: response, isLoading } = useQuery({
         queryKey: ['reports'],
         queryFn: getReports,
         staleTime: 1000 * 60 * 5,
+        enabled: isCommentsOpen
     });
 
     const reports = Array.isArray(response?.data) ? response.data : [];
@@ -45,6 +44,8 @@ export default function MobileCommentsModal() {
         if (!newComment.trim() || !activeReport) return;
         submitCommentMutation.mutate(newComment);
     };
+
+    if (!isCommentsOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:hidden">

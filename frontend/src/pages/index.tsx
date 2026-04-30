@@ -453,7 +453,13 @@ export function DashboardPage() {
                     <div className="relative w-full aspect-[4/5] bg-slate-100 flex items-center justify-center overflow-hidden">
                         {report.media && report.media.length > 0 ? (
                             <img
-                                src={report.media[0].url.startsWith('http') ? report.media[0].url : `http://localhost:8000/storage/${report.media[0].url}`}
+                                src={
+                                    report.media[0].url.startsWith('http') 
+                                        ? report.media[0].url 
+                                        : report.media[0].url.startsWith('/') 
+                                            ? report.media[0].url 
+                                            : `http://localhost:8000/storage/${report.media[0].url}`
+                                }
                                 alt="Foto Laporan"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {

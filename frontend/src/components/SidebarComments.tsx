@@ -92,7 +92,7 @@ export default function SidebarComments() {
                                     <span className="text-xs font-bold text-slate-900">@{comment.user?.name?.toLowerCase().replace(/\s+/g, '_')}</span>
                                     <span className="text-[10px] text-slate-400 font-medium">Baru saja</span>
                                 </div>
-                                <p className="text-sm text-slate-700 leading-relaxed break-words">{comment.body}</p>
+                                <p className="text-sm text-slate-700 leading-relaxed break-words">{comment.content}</p>
                                 <div className="flex items-center space-x-4 mt-2">
                                     <button className="flex items-center space-x-1 text-slate-400 hover:text-primary transition-colors">
                                         <MessageCircle size={14} />

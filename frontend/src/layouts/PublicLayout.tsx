@@ -6,7 +6,7 @@ import LoginPrompt from '@/components/LoginPrompt';
 import SidebarComments from '@/components/SidebarComments';
 import { Home, Compass, Search, PlusSquare, User as UserIcon, MessageCircle, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function PublicLayout() {
     const { user, isInitialized } = useAuthStore();
@@ -32,6 +32,7 @@ export default function PublicLayout() {
         { name: 'Jelajahi', path: '/explore', icon: Compass },
         { name: 'Cari', path: '/search', icon: Search },
         { name: 'Buat Laporan', path: '/create', icon: PlusSquare },
+        { name: 'Pesan', path: '/messages', icon: MessageCircle },
         { name: 'Profile', path: user ? '/profile' : '#', icon: UserIcon, action: !user ? openLoginPrompt : undefined },
     ];
 
@@ -39,14 +40,14 @@ export default function PublicLayout() {
 
     return (
         <div className="min-h-screen bg-slate-50 md:bg-white flex justify-center overflow-x-hidden">
-            <motion.div 
+            <motion.div
                 animate={{ maxWidth: isExplore ? "100%" : "72rem" }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="w-full flex"
             >
-                
+
                 {/* LEFT SIDEBAR (Desktop) */}
-                <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 h-screen sticky top-0 bg-white shrink-0">
+                <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 h-screen sticky top-0 bg-white shrink-0 overflow-y-auto no-scrollbar">
                     <div className="p-6">
                         <Link to="/" className="flex items-center space-x-2">
                             <img src="/Logo.png" alt="LaporYu Logo" className="h-10 w-auto" />
@@ -55,15 +56,14 @@ export default function PublicLayout() {
 
                     <nav className="flex-1 px-4 mt-4 space-y-2">
                         {navItems.map((item) => (
-                            <Link 
+                            <Link
                                 key={item.name}
                                 to={item.action ? '#' : item.path}
                                 onClick={item.action ? (e) => { e.preventDefault(); item.action!(); } : undefined}
-                                className={`flex items-center space-x-4 px-4 py-3 rounded-full transition-all duration-200 ${
-                                    isActive(item.path) 
-                                        ? 'bg-primary text-white font-bold' 
+                                className={`flex items-center space-x-4 px-4 py-3 rounded-full transition-all duration-200 ${isActive(item.path)
+                                        ? 'bg-primary text-white font-bold'
                                         : 'text-slate-700 hover:bg-slate-100 font-medium'
-                                }`}
+                                    }`}
                             >
                                 <item.icon size={isActive(item.path) ? 24 : 22} strokeWidth={isActive(item.path) ? 2.5 : 2} />
                                 <span className="text-lg">{item.name}</span>
@@ -73,15 +73,22 @@ export default function PublicLayout() {
 
                     {/* Messages Floating Box Placeholder */}
                     <div className="p-4 mb-4">
-                        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
+                        <div
+                            onClick={() => navigate('/messages')}
+                            className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors group"
+                        >
                             <div>
-                                <p className="font-bold text-slate-900">Messages</p>
+                                <p className="font-black text-slate-900 group-hover:text-primary transition-colors">Messages</p>
                                 <div className="flex -space-x-2 mt-2">
-                                    <div className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white"></div>
-                                    <div className="w-8 h-8 rounded-full bg-slate-300 border-2 border-white"></div>
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+                                        <img src="https://i.pravatar.cc/150?u=1" alt="" />
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-slate-300 border-2 border-white overflow-hidden">
+                                        <img src="https://i.pravatar.cc/150?u=2" alt="" />
+                                    </div>
                                 </div>
                             </div>
-                            <MessageCircle className="text-slate-400" />
+                            <MessageCircle className="text-slate-400 group-hover:text-primary transition-colors" />
                         </div>
                     </div>
                 </aside>
@@ -94,7 +101,7 @@ export default function PublicLayout() {
                             <img src="/Logo.png" alt="LaporYu Logo" className="h-8 w-auto" />
                         </div>
                         <h1 className="text-xl font-bold text-slate-900 hidden md:block">Home</h1>
-                        
+
                         <div className="flex items-center space-x-4">
                             <button className="text-slate-700 hover:text-primary transition-colors">
                                 <Bell size={24} />
@@ -104,7 +111,7 @@ export default function PublicLayout() {
                                     {/* Avatar placeholder */}
                                 </Link>
                             ) : (
-                                <button 
+                                <button
                                     onClick={openLoginPrompt}
                                     className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-sm"
                                 >
@@ -124,38 +131,42 @@ export default function PublicLayout() {
                     {/* Orang Yang Kau Follow */}
                     <div className="mb-8 relative group">
                         <h3 className="font-bold text-slate-900 mb-4">Orang Yang Kau Follow</h3>
-                        
+
                         <div className="relative">
-                            <div 
+                            <div
                                 ref={followScrollRef}
                                 className="flex space-x-6 overflow-x-auto pb-2 no-scrollbar scroll-smooth snap-x"
                             >
-                                {[
+                                { [
                                     { name: 'Adam Mahardika', id: 1 },
                                     { name: 'Siti Rahma', id: 2 },
                                     { name: 'Budi Santoso', id: 3 },
                                     { name: 'Diana Putri', id: 4 },
                                     { name: 'Eko Wijaya', id: 5 }
                                 ].map((person) => (
-                                    <div key={person.id} className="flex flex-col items-center flex-shrink-0 cursor-pointer snap-start w-[72px]">
-                                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-secondary to-primary p-[2px] mb-2 hover:scale-105 transition-transform">
+                                    <div 
+                                        key={person.id} 
+                                        onClick={() => navigate('/messages')}
+                                        className="flex flex-col items-center flex-shrink-0 cursor-pointer snap-start w-[72px] group/item"
+                                    >
+                                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-secondary to-primary p-[2px] mb-2 group-hover/item:scale-110 transition-transform">
                                             <div className="w-full h-full bg-white rounded-full border-2 border-white overflow-hidden">
-                                                <div className="w-full h-full bg-slate-200"></div>
+                                                <img src={`https://i.pravatar.cc/150?u=${person.id}`} className="w-full h-full object-cover" />
                                             </div>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-700 text-center truncate w-full">{person.name}</span>
+                                        <span className="text-[10px] font-black text-slate-700 text-center truncate w-full group-hover/item:text-primary transition-colors">{person.name.split(' ')[0]}</span>
                                     </div>
-                                ))}
+                                )) }
                             </div>
 
                             {/* Scroll Buttons - Only visible on hover */}
-                            <button 
+                            <button
                                 onClick={() => scrollFollow('left')}
                                 className="absolute left-0 top-7 -translate-x-2 bg-white/90 shadow-md rounded-full p-1 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-white"
                             >
                                 <ChevronLeft size={16} />
                             </button>
-                            <button 
+                            <button
                                 onClick={() => scrollFollow('right')}
                                 className="absolute right-0 top-7 translate-x-2 bg-white/90 shadow-md rounded-full p-1 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-white"
                             >
@@ -180,9 +191,8 @@ export default function PublicLayout() {
                 </aside>
 
                 {/* Sliding Comments Panel (Desktop) */}
-                <div className={`fixed top-0 right-0 h-screen bg-white z-50 border-l border-slate-200 transition-all duration-300 transform hidden md:block ${
-                    isCommentsOpen ? 'translate-x-0 w-96 opacity-100 shadow-2xl' : 'translate-x-full w-0 opacity-0'
-                }`}>
+                <div className={`fixed top-0 right-0 h-screen bg-white z-50 border-l border-slate-200 transition-all duration-300 transform hidden md:block ${isCommentsOpen ? 'translate-x-0 w-96 opacity-100 shadow-2xl' : 'translate-x-full w-0 opacity-0'
+                    }`}>
                     {isCommentsOpen && <SidebarComments />}
                 </div>
 
@@ -191,13 +201,12 @@ export default function PublicLayout() {
             {/* BOTTOM NAVIGATION (Mobile) */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-16 z-40 pb-safe">
                 {navItems.map((item) => (
-                    <Link 
+                    <Link
                         key={item.name}
                         to={item.action ? '#' : item.path}
                         onClick={item.action ? (e) => { e.preventDefault(); item.action!(); } : undefined}
-                        className={`flex flex-col items-center justify-center w-full h-full ${
-                            isActive(item.path) ? 'text-primary' : 'text-slate-500'
-                        }`}
+                        className={`flex flex-col items-center justify-center w-full h-full ${isActive(item.path) ? 'text-primary' : 'text-slate-500'
+                            }`}
                     >
                         <item.icon size={24} strokeWidth={isActive(item.path) ? 2.5 : 2} />
                     </Link>

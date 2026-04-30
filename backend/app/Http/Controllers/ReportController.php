@@ -25,12 +25,47 @@ class ReportController extends Controller
             'judul' => 'required|string|max:100',
             'deskripsi' => 'required|string',
             'kategori' => 'required|string',
-            // other validation rules...
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'kelurahan' => 'nullable|string',
+            'kecamatan' => 'nullable|string',
+            'kota' => 'nullable|string',
+            'provinsi' => 'nullable|string',
+            'media' => 'nullable|array',
+            'media.*' => 'image|max:5120', // Max 5MB per image
         ]);
 
-        // Logic for creating report...
-        
-        return response()->json(['message' => 'Report created (placeholder)'], 201);
+        $report = Report::create([
+            'user_id' => auth()->id(),
+            'judul' => $validated['judul'],
+            'deskripsi' => $validated['deskripsi'],
+            'kategori' => $validated['kategori'],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'kelurahan' => $validated['kelurahan'] ?? null,
+            'kecamatan' => $validated['kecamatan'] ?? null,
+            'kota' => $validated['kota'] ?? null,
+            'provinsi' => $validated['provinsi'] ?? null,
+            'status' => 'baru', // Default status
+        ]);
+
+        if ($request->hasFile('media')) {
+            foreach ($request->file('media') as $index => $file) {
+                $path = $file->store('reports', 'public');
+                $report->media()->create([
+                    'type' => 'image',
+                    'url' => $path,
+                    'order' => $index,
+                ]);
+            }
+        }
+
+        $report->load(['user', 'media']);
+
+        return response()->json([
+            'message' => 'Report created successfully',
+            'data' => $report
+        ], 201);
     }
 
     /**

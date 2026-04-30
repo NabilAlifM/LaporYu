@@ -113,7 +113,13 @@ export function ProfilePage() {
                         <div key={report.id} className="bg-white p-4 rounded-2xl border border-slate-200 flex space-x-4 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => navigate(`/`)}>
                             {report.media && report.media.length > 0 ? (
                                 <img 
-                                    src={report.media[0].url.startsWith('http') ? report.media[0].url : `http://localhost:8000/storage/${report.media[0].url}`}
+                                    src={
+                                        report.media[0].url.startsWith('http') 
+                                            ? report.media[0].url 
+                                            : report.media[0].url.startsWith('/') 
+                                                ? report.media[0].url 
+                                                : `http://localhost:8000/storage/${report.media[0].url}`
+                                    }
                                     className="w-24 h-24 object-cover rounded-xl"
                                     alt="Laporan"
                                 />

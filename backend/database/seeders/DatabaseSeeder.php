@@ -49,19 +49,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $damageImages = [
-            'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80', // pothole
-            'https://images.unsplash.com/photo-1585253818961-d7d8e063f25e?auto=format&fit=crop&q=80', // trash
-            'https://images.unsplash.com/photo-1605335930218-1c4b1eb4c619?auto=format&fit=crop&q=80', // abandoned building
-            'https://images.unsplash.com/photo-1533035353720-98b11119b4fc?auto=format&fit=crop&q=80', // dirty alley
-            'https://images.unsplash.com/photo-1582215354972-c51016d90a9b?auto=format&fit=crop&q=80', // broken sidewalk
-            'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?auto=format&fit=crop&q=80', // broken bridge
-            'https://images.unsplash.com/photo-1621290204273-03f4f9f74358?auto=format&fit=crop&q=80', // flood
-            'https://images.unsplash.com/photo-1625244724123-1eeaa43d0017?auto=format&fit=crop&q=80', // trash pile
-            'https://images.unsplash.com/photo-1590019156184-a55ca0998f0d?auto=format&fit=crop&q=80', // cracked wall
-            'https://images.unsplash.com/photo-1544006659-f0b21f04cb1d?auto=format&fit=crop&q=80', // messy construction
-            'https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80', // pollution
-            'https://images.unsplash.com/photo-1495556650867-99590cea3657?auto=format&fit=crop&q=80', // trash bag
-            'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&q=80', // broken light
+            '/fasilitas rusak.jpeg',
         ];
 
         // 6. Create Media, Comments, and Upvotes for Reports

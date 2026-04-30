@@ -20,10 +20,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-function LocationPicker({ position, setPosition }: { position: [number, number], setPosition: (pos: [number, number]) => void }) {
+function LocationPicker({ position, setPosition, setLokasiManual }: { position: [number, number], setPosition: (pos: [number, number]) => void, setLokasiManual: (text: string) => void }) {
     useMapEvents({
         click(e) {
             setPosition([e.latlng.lat, e.latlng.lng]);
+            setLokasiManual(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
         },
     });
 
@@ -42,6 +43,9 @@ export default function CreateReportPage() {
     const [kategori, setKategori] = useState('Infrastruktur & Fasilitas Umum');
     const [lokasiManual, setLokasiManual] = useState('');
     const [showMap, setShowMap] = useState(false);
+    const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     
     // Default to Jakarta
     const [position, setPosition] = useState<[number, number]>([-6.2088, 106.8456]);
@@ -64,6 +68,7 @@ export default function CreateReportPage() {
             return res.data;
         },
         onSuccess: () => {
+            alert('Laporan berhasil dikirim!');
             queryClient.invalidateQueries({ queryKey: ['reports'] });
             navigate('/');
         }
@@ -72,12 +77,13 @@ export default function CreateReportPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!judul || !deskripsi) return;
+        if (!judul || !deskripsi || !image) return;
 
         const formData = new FormData();
         formData.append('judul', judul);
         formData.append('deskripsi', deskripsi);
         formData.append('kategori', kategori);
+        formData.append('media[]', image);
         
         // Simulating reverse geocoding or manual input mapping
         // In a real app, you'd use a geocoding API to convert lat/lng to kelurahan/kecamatan
@@ -94,7 +100,7 @@ export default function CreateReportPage() {
     return (
         <div className="w-full max-w-2xl mx-auto pb-20 animate-in fade-in duration-300">
             {/* Header */}
-            <div className="sticky top-16 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 p-4 flex items-center mb-6">
+            <div className="bg-white p-4 flex items-center mb-6 border-b border-slate-100">
                 <button 
                     onClick={() => navigate(-1)}
                     className="p-2 hover:bg-slate-100 rounded-full transition-colors mr-2"
@@ -178,7 +184,7 @@ export default function CreateReportPage() {
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                                     url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                                 />
-                                <LocationPicker position={position} setPosition={setPosition} />
+                                <LocationPicker position={position} setPosition={setPosition} setLokasiManual={setLokasiManual} />
                             </MapContainer>
                             <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-slate-700 shadow-sm z-[1000] pointer-events-none">
                                 Klik peta untuk memindah pin
@@ -187,22 +193,55 @@ export default function CreateReportPage() {
                     )}
                 </div>
 
-                {/* Lampiran (Placeholder for UI) */}
+                {/* Lampiran */}
                 <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <label className="block text-sm font-bold text-slate-700 mb-3">Foto Bukti (Opsional)</label>
-                    <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 transition-colors group">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <UploadCloud size={24} className="text-primary" />
+                    <label className="block text-sm font-bold text-slate-700 mb-3">Foto Bukti <span className="text-red-500">*wajib</span></label>
+                    <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        ref={fileInputRef}
+                        onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                setImage(file);
+                                const reader = new FileReader();
+                                reader.onload = (e) => setImagePreview(e.target?.result as string);
+                                reader.readAsDataURL(file);
+                            }
+                        }}
+                    />
+                    {imagePreview ? (
+                        <div className="relative rounded-xl overflow-hidden border border-slate-200 group">
+                            <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button 
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="bg-white text-slate-900 font-bold px-4 py-2 rounded-full shadow-sm hover:scale-105 transition-transform"
+                                >
+                                    Ganti Foto
+                                </button>
+                            </div>
                         </div>
-                        <p className="text-sm font-bold text-slate-700">Ketuk untuk unggah foto</p>
-                        <p className="text-xs text-slate-400 mt-1">Maksimal 5MB (JPG, PNG)</p>
-                    </div>
+                    ) : (
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-50 transition-colors group"
+                        >
+                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <UploadCloud size={24} className="text-primary" />
+                            </div>
+                            <p className="text-sm font-bold text-slate-700">Ketuk untuk unggah foto</p>
+                            <p className="text-xs text-slate-400 mt-1">Maksimal 5MB (JPG, PNG)</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Submit */}
                 <button 
                     type="submit"
-                    disabled={createMutation.isPending || !judul || !deskripsi}
+                    disabled={createMutation.isPending || !judul || !deskripsi || !image}
                     className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/30 transition-all disabled:opacity-50 disabled:shadow-none flex items-center justify-center"
                 >
                     {createMutation.isPending ? (
