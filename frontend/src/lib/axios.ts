@@ -10,6 +10,15 @@ const axios = Axios.create({
     withXSRFToken: true
 });
 
+// Interceptor to attach Authorization header
+axios.interceptors.request.use(config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // Interceptor to handle global errors (like 401 Unauthorized)
 axios.interceptors.response.use(
     (response) => response,

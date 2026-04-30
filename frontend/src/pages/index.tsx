@@ -3,7 +3,7 @@ import { useState } from 'react';
 import axios from '@/lib/axios';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
-import { Heart, MessageCircle, Send, MapPin, Image as ImageIcon, IdCard, Eye, EyeOff } from 'lucide-react';
+import { Heart, MessageCircle, Send, MapPin, Image as ImageIcon, IdCard, Eye, EyeOff, ArrowBigUp, ArrowBigDown, MoreHorizontal, Share2, ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getReports } from '@/services/api';
 
@@ -22,10 +22,11 @@ export function LoginPage() {
 
         try {
             await axios.get('/sanctum/csrf-cookie');
-            await axios.post('/api/login', { email, password });
+            const res = await axios.post('/api/login', { email, password });
+            localStorage.setItem('token', res.data.token);
             await fetchUser();
             // AuthStore will be updated, App.tsx will handle the redirect based on role
-            navigate('/'); 
+            navigate('/');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Gagal login. Periksa kembali email dan password.');
         } finally {
@@ -35,8 +36,17 @@ export function LoginPage() {
 
     return (
         <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-2xl font-semibold mb-6">Masuk ke Akun</h2>
-            
+            <div className="flex items-center mb-6">
+                <button 
+                    onClick={() => navigate(-1)}
+                    className="mr-2 p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors"
+                    type="button"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <h2 className="text-2xl font-semibold">Masuk ke Akun</h2>
+            </div>
+
             {error && (
                 <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-4 border border-destructive/20">
                     {error}
@@ -46,8 +56,8 @@ export function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input 
-                        type="email" 
+                    <input
+                        type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -55,11 +65,11 @@ export function LoginPage() {
                         placeholder="nama@email.com"
                     />
                 </div>
-                
+
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                    <input 
-                        type="password" 
+                    <input
+                        type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -67,8 +77,8 @@ export function LoginPage() {
                         placeholder="••••••••"
                     />
                 </div>
-                
-                <button 
+
+                <button
                     type="submit"
                     disabled={loading}
                     className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors font-medium mt-6 disabled:opacity-50"
@@ -76,7 +86,7 @@ export function LoginPage() {
                     {loading ? 'Memproses...' : 'Masuk'}
                 </button>
             </form>
-            
+
             <p className="mt-6 text-center text-sm text-slate-600">
                 Belum punya akun? <Link to="/register" className="text-primary hover:underline font-medium">Daftar sekarang</Link>
             </p>
@@ -101,7 +111,7 @@ export function RegisterPage() {
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        
+
         if (password !== passwordConfirmation) {
             setError('Konfirmasi password tidak cocok');
             return;
@@ -111,14 +121,15 @@ export function RegisterPage() {
 
         try {
             await axios.get('/sanctum/csrf-cookie');
-            await axios.post('/api/register', { 
-                name, 
-                email, 
+            const res = await axios.post('/api/register', {
+                name,
+                email,
                 password,
                 password_confirmation: passwordConfirmation,
-                role: 'user', // Default register is for user/warga
+                role: 'user', // Default  user/warga
                 nik
             });
+            localStorage.setItem('token', res.data.token);
             await fetchUser();
             navigate('/');
         } catch (err: any) {
@@ -130,8 +141,17 @@ export function RegisterPage() {
 
     return (
         <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-2xl font-semibold mb-6">Daftar Akun Baru</h2>
-            
+            <div className="flex items-center mb-6">
+                <button 
+                    onClick={() => navigate(-1)}
+                    className="mr-2 p-2 hover:bg-slate-100 rounded-full text-slate-600 transition-colors"
+                    type="button"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <h2 className="text-2xl font-semibold">Daftar Akun Baru</h2>
+            </div>
+
             {error && (
                 <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg mb-4 border border-destructive/20">
                     {error}
@@ -141,8 +161,8 @@ export function RegisterPage() {
             <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
@@ -153,8 +173,8 @@ export function RegisterPage() {
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input 
-                        type="email" 
+                    <input
+                        type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -162,12 +182,12 @@ export function RegisterPage() {
                         placeholder="nama@email.com"
                     />
                 </div>
-                
+
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
                     <div className="relative">
-                        <input 
-                            type={showPassword ? 'text' : 'password'} 
+                        <input
+                            type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -187,8 +207,8 @@ export function RegisterPage() {
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password</label>
                     <div className="relative">
-                        <input 
-                            type={showPasswordConfirmation ? 'text' : 'password'} 
+                        <input
+                            type={showPasswordConfirmation ? 'text' : 'password'}
                             value={passwordConfirmation}
                             onChange={(e) => setPasswordConfirmation(e.target.value)}
                             required
@@ -207,8 +227,8 @@ export function RegisterPage() {
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">NIK (Nomor Induk Kependudukan)</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         value={nik}
                         onChange={(e) => setNik(e.target.value)}
                         required
@@ -220,8 +240,8 @@ export function RegisterPage() {
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Foto KTP</label>
-                    <label 
-                        htmlFor="foto-ktp-input" 
+                    <label
+                        htmlFor="foto-ktp-input"
                         className="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors group"
                     >
                         {fotoKtp ? (
@@ -237,9 +257,9 @@ export function RegisterPage() {
                                 <p className="text-xs text-slate-400 mt-1">Ambil foto KTP Anda dengan jelas</p>
                             </div>
                         )}
-                        <input 
+                        <input
                             id="foto-ktp-input"
-                            type="file" 
+                            type="file"
                             accept="image/*"
                             onChange={(e) => setFotoKtp(e.target.files ? e.target.files[0] : null)}
                             required
@@ -247,8 +267,8 @@ export function RegisterPage() {
                         />
                     </label>
                 </div>
-                
-                <button 
+
+                <button
                     type="submit"
                     disabled={loading}
                     className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors font-medium mt-6 disabled:opacity-50"
@@ -256,7 +276,7 @@ export function RegisterPage() {
                     {loading ? 'Memproses...' : 'Daftar'}
                 </button>
             </form>
-            
+
             <p className="mt-6 text-center text-sm text-slate-600">
                 Sudah punya akun? <Link to="/login" className="text-primary hover:underline font-medium">Masuk di sini</Link>
             </p>
@@ -309,7 +329,7 @@ export function DashboardPage() {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Gagal memuat laporan</h3>
                 <p className="text-slate-500 mb-6">{(error as any)?.message || 'Terjadi kesalahan pada sistem.'}</p>
-                <button 
+                <button
                     onClick={() => window.location.reload()}
                     className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
@@ -354,9 +374,9 @@ export function DashboardPage() {
                     {/* Card Media (Image) */}
                     <div className="relative w-full aspect-[4/5] bg-slate-100 flex items-center justify-center overflow-hidden">
                         {report.media && report.media.length > 0 ? (
-                            <img 
-                                src={`http://localhost:8000/storage/${report.media[0].file_path}`} 
-                                alt="Foto Laporan" 
+                            <img
+                                src={report.media[0].url.startsWith('http') ? report.media[0].url : `http://localhost:8000/storage/${report.media[0].url}`}
+                                alt="Foto Laporan"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).style.display = 'none';
@@ -364,40 +384,76 @@ export function DashboardPage() {
                                 }}
                             />
                         ) : null}
-                        
+
                         {/* Fallback/Placeholder if no image or image fails to load */}
                         <div className={`absolute inset-0 bg-slate-200 flex flex-col items-center justify-center text-slate-400 ${report.media && report.media.length > 0 ? 'hidden' : ''}`}>
                             <ImageIcon size={48} className="mb-2 opacity-50" />
                             <span className="text-sm font-medium">Gambar Tidak Tersedia</span>
                         </div>
-                        
+
                         {/* Location Overlay Badge */}
                         <div className="absolute bottom-4 left-4 right-4 flex">
                             <div className="bg-primary/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full flex items-center space-x-1.5 shadow-lg max-w-full">
                                 <MapPin size={14} className="flex-shrink-0" />
-                                <span className="text-xs font-medium truncate">{report.lokasi || 'Lokasi tidak diketahui'}</span>
+                                <span className="text-xs font-medium truncate">
+                                    {report.kelurahan && report.kota ? `${report.kelurahan}, ${report.kota}` : (report.kota || 'Lokasi tidak diketahui')}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     {/* Card Actions & Content */}
                     <div className="p-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center space-x-4">
-                                <button onClick={!user ? openLoginPrompt : undefined} className="flex items-center space-x-1.5 text-slate-700 hover:text-red-500 transition-colors">
-                                    <Heart size={24} />
-                                    <span className="text-sm font-bold">{report.upvotes_count || 0}</span>
+                        <div className="flex items-center justify-between mt-4 border-t border-slate-100 pt-3 mb-3">
+                            <div className="flex items-center space-x-2 sm:space-x-4">
+                                {/* Upvote/Downvote Pill (Quora Style) */}
+                                <div className="flex items-center bg-slate-100 hover:bg-slate-200/80 rounded-full transition-colors overflow-hidden border border-slate-200/50">
+                                    <button 
+                                        onClick={!user ? openLoginPrompt : undefined}
+                                        className="flex items-center space-x-2 px-3 sm:px-4 py-2 text-slate-700 hover:text-blue-600 transition-colors border-r border-slate-200"
+                                    >
+                                        <ArrowBigUp size={18} className="text-blue-600 fill-blue-600/10" strokeWidth={2.5} />
+                                        <span className="text-xs sm:text-sm font-semibold text-slate-700">
+                                            Upvote <span className="mx-1 font-normal text-slate-400">·</span> {report.upvotes_count || 0}
+                                        </span>
+                                    </button>
+                                    <button 
+                                        onClick={!user ? openLoginPrompt : undefined}
+                                        className="px-3 py-2 text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center"
+                                    >
+                                        <ArrowBigDown size={18} />
+                                    </button>
+                                </div>
+
+                                {/* Comment Button */}
+                                <button 
+                                    onClick={!user ? openLoginPrompt : undefined}
+                                    className="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors"
+                                >
+                                    <MessageCircle size={18} />
+                                    <span className="text-xs sm:text-sm font-medium text-slate-700">{report.comments?.length || 0}</span>
                                 </button>
-                                <button onClick={!user ? openLoginPrompt : undefined} className="flex items-center space-x-1.5 text-slate-700 hover:text-blue-500 transition-colors">
-                                    <MessageCircle size={24} />
-                                    <span className="text-sm font-bold">{report.comments?.length || 0}</span>
-                                </button>
-                                <button onClick={!user ? openLoginPrompt : undefined} className="flex items-center space-x-1.5 text-slate-700 hover:text-slate-500 transition-colors">
-                                    <Send size={24} />
+
+                                {/* Share Button */}
+                                <button 
+                                    onClick={!user ? openLoginPrompt : undefined}
+                                    className="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors"
+                                >
+                                    <Share2 size={18} />
                                 </button>
                             </div>
-                            <div className="bg-secondary/20 text-secondary-foreground px-3 py-1 rounded-full text-xs font-bold truncate max-w-[150px]">
-                                {report.kategori}
+
+                            {/* Category Badge & More Options */}
+                            <div className="flex items-center space-x-2">
+                                <div className="bg-secondary/20 text-secondary-foreground px-3 py-1 rounded-full text-xs font-bold truncate max-w-[120px] hidden sm:block">
+                                    {report.kategori}
+                                </div>
+                                <button 
+                                    onClick={!user ? openLoginPrompt : undefined}
+                                    className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+                                >
+                                    <MoreHorizontal size={20} />
+                                </button>
                             </div>
                         </div>
 
@@ -405,7 +461,7 @@ export function DashboardPage() {
                             <span className="font-bold mr-2">{report.is_anonymous ? 'Warga Anonim' : report.user?.name}</span>
                             {report.deskripsi}
                         </div>
-                        
+
                         <div className="text-xs text-slate-500 mt-2 uppercase font-medium">
                             {new Date(report.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </div>

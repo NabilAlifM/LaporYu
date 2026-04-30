@@ -30,6 +30,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error) {
             console.error('Logout failed', error);
         } finally {
+            localStorage.removeItem('token');
             set({ user: null });
         }
     },

@@ -48,8 +48,16 @@ class DatabaseSeeder extends Seeder
             'kode_wilayah' => '31.71.01',
         ]);
 
-        // 6. Create Comments and Upvotes for Reports
-        foreach ($reports as $report) {
+        // 6. Create Media, Comments, and Upvotes for Reports
+        foreach ($reports as $index => $report) {
+            // Media (1-2 images per report)
+            for ($i = 0; $i < rand(1, 2); $i++) {
+                \App\Models\ReportMedia::create([
+                    'report_id' => $report->id,
+                    'url' => 'https://picsum.photos/seed/' . ($report->id * 10 + $i) . '/600/800',
+                    'type' => 'image',
+                ]);
+            }
             // Comments
             \App\Models\Comment::factory(rand(1, 5))->create([
                 'report_id' => $report->id,

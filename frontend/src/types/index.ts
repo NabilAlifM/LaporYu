@@ -17,8 +17,8 @@ export interface Instansi {
 export interface ReportMedia {
     id: number;
     report_id: number;
-    file_path: string;
-    file_type: string;
+    url: string;
+    type: string;
 }
 
 export interface Comment {
@@ -35,11 +35,14 @@ export interface Report {
     judul: string;
     deskripsi: string;
     kategori: string;
-    lokasi: string;
+    kelurahan?: string;
+    kecamatan?: string;
+    kota?: string;
+    provinsi?: string;
     latitude?: number;
     longitude?: number;
     status: string;
-    is_anonymous: boolean;
+    is_anonymous?: boolean;
     upvotes_count: number;
     created_at: string;
     updated_at: string;
