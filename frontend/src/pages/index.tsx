@@ -405,6 +405,29 @@ export function DashboardPage() {
         );
     }
 
+    const getInstansiLogo = (kategori: string) => {
+        switch (kategori) {
+            case 'Infrastruktur & Fasilitas Umum': return '/pupr.png';
+            case 'Kebersihan & Lingkungan': return '/hutan.png';
+            case 'Keamanan & Ketertiban': return '/polri.png';
+            case 'Layanan Publik & Administrasi': return '/kementriannegri.jpg';
+            case 'Kesehatan': return '/kesehhatan.png';
+            case 'Pendidikan': return '/Kemendikbud.jpg';
+            case 'Sosial & Kemasyarakatan': return '/sosial.jpg';
+            default: return '/Logo.png';
+        }
+    };
+
+    const getPemkotLogo = (kota: string) => {
+        const logos: Record<string, string> = {
+            'Jakarta': '/jakarta.jpg',
+            'Bandung': '/bandung.png',
+            'Tangerang Selatan': '/tangsel.png',
+            'Tangsel': '/tangsel.png',
+        };
+        return logos[kota] || '/Logo.png';
+    };
+
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             {reports.map((report) => (
@@ -448,10 +471,12 @@ export function DashboardPage() {
 
                         {/* Location Overlay Badge */}
                         <div className="absolute bottom-4 left-4 right-4 flex">
-                            <div className="bg-primary/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full flex items-center space-x-1.5 shadow-lg max-w-full">
-                                <MapPin size={14} className="flex-shrink-0" />
-                                <span className="text-xs font-medium truncate">
-                                    {report.kelurahan && report.kota ? `${report.kelurahan}, ${report.kota}` : (report.kota || 'Lokasi tidak diketahui')}
+                            <div className="bg-primary/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full flex items-center space-x-2 shadow-lg max-w-full">
+                                <div className="w-5 h-5 bg-white rounded-full p-0.5 overflow-hidden flex-shrink-0">
+                                    <img src={getPemkotLogo(report.kota || '')} alt="Pemkot Logo" className="w-full h-full object-contain" />
+                                </div>
+                                <span className="text-[10px] font-bold truncate pr-1">
+                                    daerah {report.kelurahan} di {report.kota}
                                 </span>
                             </div>
                         </div>
@@ -469,13 +494,13 @@ export function DashboardPage() {
                                             else upvoteMutation.mutate(report.id);
                                         }}
                                         disabled={upvoteMutation.isPending}
-                                        className={`flex items-center space-x-2 px-3 sm:px-4 py-2 transition-colors border-r border-slate-200 ${
+                                        className={`flex items-center space-x-1.5 px-3 py-1.5 transition-colors border-r border-slate-200 ${
                                             report.is_upvoted ? 'text-blue-600 bg-blue-50/50' : 'text-slate-700 hover:text-blue-600'
                                         }`}
                                     >
-                                        <ArrowBigUp size={18} className={`${report.is_upvoted ? 'fill-blue-600' : 'fill-blue-600/10'}`} strokeWidth={2.5} />
-                                        <span className="text-xs sm:text-sm font-semibold">
-                                            Upvote <span className="mx-1 font-normal text-slate-400">·</span> {report.upvotes_count || 0}
+                                        <ArrowBigUp size={16} className={`${report.is_upvoted ? 'fill-blue-600' : 'fill-blue-600/10'}`} strokeWidth={2.5} />
+                                        <span className="text-[11px] sm:text-xs font-bold">
+                                            Upvote <span className="mx-0.5 font-normal text-slate-400">·</span> {report.upvotes_count || 0}
                                         </span>
                                     </button>
                                     <button 
@@ -484,11 +509,11 @@ export function DashboardPage() {
                                             else downvoteMutation.mutate(report.id);
                                         }}
                                         disabled={downvoteMutation.isPending}
-                                        className={`px-3 py-2 transition-colors flex items-center justify-center ${
+                                        className={`px-2 py-1.5 transition-colors flex items-center justify-center ${
                                             report.is_downvoted ? 'text-red-600 bg-red-50' : 'text-slate-500 hover:text-red-500 hover:bg-red-50'
                                         }`}
                                     >
-                                        <ArrowBigDown size={18} className={`${report.is_downvoted ? 'fill-red-600' : ''}`} />
+                                        <ArrowBigDown size={16} className={`${report.is_downvoted ? 'fill-red-600' : ''}`} />
                                     </button>
                                 </div>
 
@@ -518,8 +543,11 @@ export function DashboardPage() {
 
                             {/* Category Badge & More Options */}
                             <div className="flex items-center space-x-2">
-                                <div className="bg-secondary/20 text-secondary-foreground px-3 py-1 rounded-full text-xs font-bold truncate max-w-[120px] hidden sm:block">
-                                    {report.kategori}
+                                <div className="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-1 rounded-full text-xs font-bold truncate max-w-[150px] hidden sm:flex items-center space-x-1.5">
+                                    <div className="w-4 h-4 bg-white rounded-full overflow-hidden flex-shrink-0 border border-slate-200 p-[1px]">
+                                        <img src={getInstansiLogo(report.kategori)} alt="Instansi" className="w-full h-full object-contain" />
+                                    </div>
+                                    <span className="truncate">{report.kategori}</span>
                                 </div>
                                 <button 
                                     onClick={!user ? openLoginPrompt : undefined}

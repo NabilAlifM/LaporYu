@@ -24,8 +24,14 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $indoNames = [
+            'Budi Santoso', 'Siti Aminah', 'Agus Prayitno', 'Dewi Lestari', 'Eko Susanto',
+            'Rina Wijaya', 'Andi Hermawan', 'Maya Putri', 'Joko Widodo', 'Sri Wahyuni',
+            'Rizky Pratama', 'Putri Utami', 'Adi Nugroho', 'Ani Suryani', 'Dedi Setiawan'
+        ];
+
         return [
-            'name' => fake()->name(),
+            'name' => fake()->randomElement($indoNames),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

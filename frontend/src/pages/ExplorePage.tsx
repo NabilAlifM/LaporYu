@@ -138,7 +138,7 @@ export default function ExplorePage() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-slate-900 text-sm truncate">{report.judul}</h4>
-                                        <p className="text-xs text-slate-500 truncate mt-0.5">{report.kelurahan}, {report.kecamatan}</p>
+                                        <p className="text-xs text-slate-500 truncate mt-0.5">daerah {report.kelurahan} di {report.kota}</p>
                                     </div>
                                     <ChevronRight size={16} className={activeReportId === report.id ? 'text-primary' : 'text-slate-300'} />
                                 </button>
@@ -188,7 +188,7 @@ export default function ExplorePage() {
                             
                             <p className="text-sm text-slate-500 flex items-center mb-4">
                                 <MapPin size={14} className="mr-1 flex-shrink-0" />
-                                <span className="truncate">{activeReport.kelurahan}, {activeReport.kecamatan}</span>
+                                <span className="truncate">daerah {activeReport.kelurahan} di {activeReport.kota}</span>
                             </p>
 
                             <div className="grid grid-cols-2 gap-3 mb-6">

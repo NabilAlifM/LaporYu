@@ -159,7 +159,7 @@ export default function SearchPage() {
                             <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
                                 <div className="flex items-center text-xs text-slate-500 font-medium">
                                     <MapPin size={14} className="mr-1" />
-                                    <span className="truncate max-w-[200px]">{report.kelurahan}, {report.kecamatan}</span>
+                                    <span className="truncate max-w-[200px]">daerah {report.kelurahan} di {report.kota}</span>
                                 </div>
                                 <button 
                                     onClick={(e) => {
