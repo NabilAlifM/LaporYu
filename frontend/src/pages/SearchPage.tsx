@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search as SearchIcon, MapPin } from 'lucide-react';
+import { Search as SearchIcon, MapPin, X, ArrowUpRight } from 'lucide-react';
 import { getReports } from '@/services/api';
 import type { Report } from '@/types/index';
 import { useUIStore } from '@/store/uiStore';
@@ -57,24 +57,39 @@ export default function SearchPage() {
         <div className="w-full max-w-2xl mx-auto space-y-6 animate-in fade-in zoom-in duration-300">
             {/* Search Header */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-                <div className="relative">
-                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <div className="relative group">
+                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                     <input 
                         type="text" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Cari laporan, kategori, atau lokasi..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-10 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
+                    {searchQuery && (
+                        <button 
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-full text-slate-400 transition-all"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
                 </div>
                 
                 <div className="flex flex-col space-y-3 mt-4">
-                    <div className="flex justify-between items-center">
-                        <h3 className="font-bold text-slate-800 text-sm">Filter Instansi</h3>
+                    <div className="flex justify-between items-center px-1">
+                        <div className="flex items-center space-x-2">
+                            <h3 className="font-black text-slate-900 text-sm">Filter Instansi</h3>
+                            {!isLoading && filteredReports.length > 0 && (
+                                <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
+                                    {filteredReports.length} Hasil
+                                </span>
+                            )}
+                        </div>
                         <select 
                             value={activeKota}
                             onChange={(e) => setActiveKota(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary appearance-none font-medium"
+                            className="bg-white border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none font-bold cursor-pointer hover:border-primary/50 transition-all shadow-sm"
                         >
                             {uniqueKotas.map((kota: any) => (
                                 <option key={kota} value={kota}>{kota}</option>
@@ -92,23 +107,23 @@ export default function SearchPage() {
                                 <button
                                     key={instansi.category}
                                     onClick={() => setActiveFilter(instansi.category)}
-                                    className={`flex items-center p-3 min-w-[240px] rounded-2xl border transition-all snap-start text-left ${
+                                    className={`flex items-center p-3 min-w-[220px] rounded-2xl border transition-all snap-start text-left ${
                                         isActive 
-                                        ? 'bg-white border-primary shadow-md shadow-primary/10 ring-1 ring-primary/50' 
-                                        : 'bg-white border-slate-200 hover:border-primary/40 hover:shadow-sm'
+                                        ? 'bg-primary/5 border-primary shadow-sm ring-1 ring-primary/20' 
+                                        : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-sm'
                                     }`}
                                 >
                                     {/* Logo Image */}
-                                    <div className={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-white mr-3 flex-shrink-0 border ${
-                                        isActive ? 'border-primary' : 'border-slate-100'
+                                    <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white mr-3 flex-shrink-0 border ${
+                                        isActive ? 'border-primary/30' : 'border-slate-100'
                                     }`}>
                                         <img src={instansi.image} alt={instansi.name} className="w-full h-full object-contain p-1" />
                                     </div>
                                     
                                     {/* Text Info */}
                                     <div className="flex flex-col min-w-0">
-                                        <span className="font-bold text-slate-800 text-sm truncate">{instansi.name}</span>
-                                        <span className="text-xs text-slate-500 mt-0.5">{count} Laporan</span>
+                                        <span className={`font-bold text-sm truncate ${isActive ? 'text-primary' : 'text-slate-800'}`}>{instansi.name}</span>
+                                        <span className="text-[10px] text-slate-500 font-bold mt-0.5 uppercase tracking-wider">{count} Laporan</span>
                                     </div>
                                 </button>
                             );
@@ -118,36 +133,50 @@ export default function SearchPage() {
             </div>
 
             {/* Search Results */}
-            <div className="space-y-4">
+            <div className="space-y-4 pb-10">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 space-y-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                        <p className="text-sm text-slate-400 font-medium">Mencari...</p>
+                    <div className="flex flex-col items-center justify-center py-20 space-y-4 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
+                        <div className="w-10 h-10 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
+                        <p className="text-sm text-slate-400 font-bold tracking-widest uppercase">Mencari Laporan...</p>
                     </div>
                 ) : filteredReports.length > 0 ? (
                     filteredReports.map((report: Report) => (
-                        <div key={report.id} className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 hover:shadow-md transition-shadow cursor-pointer">
-                            <div className="flex justify-between items-start mb-3">
+                        <div 
+                            key={report.id} 
+                            onClick={() => {
+                                setActiveReportId(report.id);
+                                setIsCommentsOpen(true);
+                            }}
+                            className="bg-white rounded-[2rem] p-5 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 hover:border-primary/20 transition-all cursor-pointer group"
+                        >
+                            <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500">
+                                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                                         {report.user?.name?.charAt(0) || '?'}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-slate-900 leading-tight">{report.user?.name}</h3>
-                                        <div className="flex items-center space-x-2 text-xs text-slate-500 mt-0.5">
-                                            <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{report.kategori}</span>
+                                        <h3 className="font-black text-slate-900 leading-tight text-sm">{report.user?.name}</h3>
+                                        <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">
+                                            <span className="bg-slate-50 text-slate-500 px-2 py-0.5 rounded-full border border-slate-100">{report.kategori}</span>
                                             <span>•</span>
-                                            <span>{new Date(report.created_at).toLocaleDateString('id-ID')}</span>
+                                            <span>{new Date(report.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
                                         </div>
                                     </div>
                                 </div>
+                                <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                    report.status === 'selesai' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                    report.status === 'diproses' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                    'bg-slate-50 text-slate-500 border-slate-100'
+                                }`}>
+                                    {report.status}
+                                </div>
                             </div>
                             
-                            <h4 className="font-bold text-lg text-slate-900 mb-2">{report.judul}</h4>
-                            <p className="text-sm text-slate-700 leading-relaxed line-clamp-2">{report.deskripsi}</p>
+                            <h4 className="font-black text-lg text-slate-900 mb-2 group-hover:text-primary transition-colors">{report.judul}</h4>
+                            <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 font-medium">{report.deskripsi}</p>
                             
                             {report.media && report.media.length > 0 && (
-                                <div className="mt-3 w-full h-40 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+                                <div className="mt-4 w-full h-48 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100">
                                     <img 
                                         src={
                                             report.media[0].url.startsWith('http') 
@@ -157,26 +186,20 @@ export default function SearchPage() {
                                                     : `http://localhost:8000/storage/${report.media[0].url}`
                                         } 
                                         alt="Lampiran laporan" 
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
                                 </div>
                             )}
 
-                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                                <div className="flex items-center text-xs text-slate-500 font-medium">
-                                    <MapPin size={14} className="mr-1" />
-                                    <span className="truncate max-w-[200px]">daerah {report.kelurahan} di {report.kota}</span>
+                            <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-50">
+                                <div className="flex items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                    <MapPin size={12} className="mr-1 text-slate-300" />
+                                    <span className="truncate max-w-[180px]">{report.kelurahan}, {report.kota}</span>
                                 </div>
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setActiveReportId(report.id);
-                                        setIsCommentsOpen(true);
-                                    }}
-                                    className="text-sm font-bold text-primary hover:text-primary/80 transition-colors"
-                                >
-                                    Lihat Diskusi
-                                </button>
+                                <div className="flex items-center space-x-1 text-xs font-black text-primary">
+                                    <span>Lihat Diskusi</span>
+                                    <ArrowUpRight size={14} />
+                                </div>
                             </div>
                         </div>
                     ))

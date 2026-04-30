@@ -36,4 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/following', [FollowController::class, 'following']);
     Route::post('/users/{userId}/follow', [FollowController::class, 'store']);
     Route::delete('/users/{userId}/follow', [FollowController::class, 'destroy']);
+
+    // Instansi Routes
+    Route::get('/instansi/reports', [ReportController::class, 'indexInstansi']);
+    Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus']);
 });

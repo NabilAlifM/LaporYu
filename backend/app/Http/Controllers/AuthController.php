@@ -50,6 +50,7 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
+        $user->load('instansi');
 
         return response()->json([
             'user' => $user,

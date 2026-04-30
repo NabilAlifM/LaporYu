@@ -94,4 +94,47 @@ class ReportController extends Controller
         // Logic for deleting report...
         return response()->json(['message' => 'Report deleted (placeholder)']);
     }
+
+    /**
+     * Get reports for the authenticated instansi's jurisdiction.
+     */
+    public function indexInstansi(Request $request)
+    {
+        $user = auth()->user();
+        $instansi = $user->instansi;
+
+        if (!$instansi) {
+            return response()->json(['message' => 'User is not an instansi'], 403);
+        }
+
+        // Filter by kode_wilayah or kota
+        $reports = Report::with(['user', 'media'])
+            ->where(function($query) use ($instansi) {
+                $query->where('kode_wilayah', $instansi->kode_wilayah)
+                      ->orWhere('kota', 'LIKE', '%' . str_replace('Pemkot ', '', $instansi->nama_instansi) . '%');
+            })
+            ->latest()
+            ->get();
+
+        return response()->json(['data' => $reports]);
+    }
+
+    /**
+     * Update report status.
+     */
+    public function updateStatus(Request $request, Report $report)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:baru,diproses,selesai,ditolak',
+        ]);
+
+        $report->update(['status' => $validated['status']]);
+
+        // Create log if needed (ReportStatusLog)
+        
+        return response()->json([
+            'message' => 'Status laporan berhasil diperbarui',
+            'data' => $report
+        ]);
+    }
 }

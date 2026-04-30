@@ -8,6 +8,12 @@ export interface User {
     role: 'user' | 'instansi';
     kode_wilayah?: string;
     avatar?: string;
+    instansi?: {
+        id: number;
+        nama_instansi: string;
+        kategori_tanggung_jawab: string;
+        kode_wilayah: string;
+    };
 }
 
 interface AuthState {

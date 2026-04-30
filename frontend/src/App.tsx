@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import AuthLayout from './layouts/AuthLayout';
-import PublicLayout from './layouts/PublicLayout';
-import InstansiLayout from './layouts/InstansiLayout';
-import { LoginPage, RegisterPage, DashboardPage } from './pages';
-import { ProfilePage } from './pages/ProfilePage';
-import ExplorePage from './pages/ExplorePage';
-import SearchPage from './pages/SearchPage';
-import CreateReportPage from './pages/CreateReportPage';
-import MessagesPage from './pages/MessagesPage';
+import AuthLayout from '@/layouts/AuthLayout';
+import PublicLayout from '@/layouts/PublicLayout';
+import InstansiLayout from '@/layouts/InstansiLayout';
+import { LoginPage, RegisterPage, DashboardPage } from '@/pages';
+import { ProfilePage } from '@/pages/ProfilePage';
+import ExplorePage from '@/pages/ExplorePage';
+import SearchPage from '@/pages/SearchPage';
+import CreateReportPage from '@/pages/CreateReportPage';
+import MessagesPage from '@/pages/MessagesPage';
+import InstansiDashboardPage from '@/pages/instansi/InstansiDashboardPage';
 
 import { useAuthStore } from './store/authStore';
 
@@ -52,7 +53,7 @@ function App() {
       {/* Instansi Only Routes */}
       <Route path="/instansi" element={<InstansiLayout />}>
         <Route path="" element={<Navigate to="/instansi/dashboard" replace />} />
-        <Route path="dashboard" element={<div>Dasbor Instansi (Tabel Laporan Masuk)</div>} />
+        <Route path="dashboard" element={<InstansiDashboardPage />} />
         <Route path="reports" element={<div>Semua Laporan Instansi</div>} />
         <Route path="statistics" element={<div>Statistik Instansi</div>} />
         <Route path="settings" element={<div>Pengaturan Instansi</div>} />
