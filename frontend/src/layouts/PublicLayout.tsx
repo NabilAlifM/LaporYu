@@ -3,12 +3,22 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import LoginPrompt from '@/components/LoginPrompt';
-import { Home, Compass, Search, PlusSquare, User as UserIcon, MessageCircle, Bell } from 'lucide-react';
+import SidebarComments from '@/components/SidebarComments';
+import { Home, Compass, Search, PlusSquare, User as UserIcon, MessageCircle, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRef } from 'react';
 
 export default function PublicLayout() {
     const { user, isInitialized } = useAuthStore();
     const { openLoginPrompt, isCommentsOpen, setIsCommentsOpen } = useUIStore();
     const location = useLocation();
+    const followScrollRef = useRef<HTMLDivElement>(null);
+
+    const scrollFollow = (direction: 'left' | 'right') => {
+        if (followScrollRef.current) {
+            const scrollAmount = direction === 'left' ? -200 : 200;
+            followScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     if (!isInitialized) {
         return <div className="flex h-screen items-center justify-center bg-slate-50">Loading...</div>;
@@ -105,19 +115,45 @@ export default function PublicLayout() {
                 {/* RIGHT SIDEBAR (Desktop) */}
                 <aside className="hidden lg:block w-80 h-screen sticky top-0 bg-white p-6 overflow-y-auto no-scrollbar relative">
                     {/* Orang Yang Kau Follow */}
-                    <div className="mb-8">
+                    <div className="mb-8 relative group">
                         <h3 className="font-bold text-slate-900 mb-4">Orang Yang Kau Follow</h3>
-                        <div className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="flex flex-col items-center flex-shrink-0 cursor-pointer">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-secondary to-primary p-[2px] mb-1">
-                                        <div className="w-full h-full bg-white rounded-full border-2 border-white overflow-hidden">
-                                            <div className="w-full h-full bg-slate-200"></div>
+                        
+                        <div className="relative">
+                            <div 
+                                ref={followScrollRef}
+                                className="flex space-x-6 overflow-x-auto pb-2 no-scrollbar scroll-smooth snap-x"
+                            >
+                                {[
+                                    { name: 'Adam Mahardika', id: 1 },
+                                    { name: 'Siti Rahma', id: 2 },
+                                    { name: 'Budi Santoso', id: 3 },
+                                    { name: 'Diana Putri', id: 4 },
+                                    { name: 'Eko Wijaya', id: 5 }
+                                ].map((person) => (
+                                    <div key={person.id} className="flex flex-col items-center flex-shrink-0 cursor-pointer snap-start w-[72px]">
+                                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-secondary to-primary p-[2px] mb-2 hover:scale-105 transition-transform">
+                                            <div className="w-full h-full bg-white rounded-full border-2 border-white overflow-hidden">
+                                                <div className="w-full h-full bg-slate-200"></div>
+                                            </div>
                                         </div>
+                                        <span className="text-[10px] font-bold text-slate-700 text-center truncate w-full">{person.name}</span>
                                     </div>
-                                    <span className="text-xs font-medium text-slate-700 text-center w-16 truncate">Adam Mahardika</span>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+
+                            {/* Scroll Buttons - Only visible on hover */}
+                            <button 
+                                onClick={() => scrollFollow('left')}
+                                className="absolute left-0 top-7 -translate-x-2 bg-white/90 shadow-md rounded-full p-1 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-white"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <button 
+                                onClick={() => scrollFollow('right')}
+                                className="absolute right-0 top-7 translate-x-2 bg-white/90 shadow-md rounded-full p-1 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-white"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
                         </div>
                     </div>
 
@@ -136,6 +172,13 @@ export default function PublicLayout() {
                     </div>
 
                 </aside>
+
+                {/* Sliding Comments Panel (Desktop) */}
+                <div className={`fixed top-0 right-0 h-screen bg-white z-50 border-l border-slate-200 transition-all duration-300 transform hidden md:block ${
+                    isCommentsOpen ? 'translate-x-0 w-96 opacity-100 shadow-2xl' : 'translate-x-full w-0 opacity-0'
+                }`}>
+                    {isCommentsOpen && <SidebarComments />}
+                </div>
 
             </div>
 

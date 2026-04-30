@@ -494,7 +494,13 @@ export function DashboardPage() {
 
                                 {/* Comment Button */}
                                 <button 
-                                    onClick={() => navigate(`/reports/${report.id}/comments`)}
+                                    onClick={() => {
+                                        if (!user) openLoginPrompt();
+                                        else {
+                                            setActiveReportId(report.id);
+                                            setIsCommentsOpen(true);
+                                        }
+                                    }}
                                     className="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors"
                                 >
                                     <MessageCircle size={18} />

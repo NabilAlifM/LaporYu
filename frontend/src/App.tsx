@@ -5,7 +5,7 @@ import PublicLayout from './layouts/PublicLayout';
 import InstansiLayout from './layouts/InstansiLayout';
 import { LoginPage, RegisterPage, DashboardPage } from './pages';
 import { ProfilePage } from './pages/ProfilePage';
-import ReportCommentsPage from './pages/ReportCommentsPage';
+
 import { useAuthStore } from './store/authStore';
 
 function App() {
@@ -30,7 +30,7 @@ function App() {
         <Route path="/profile" element={
           user ? <ProfilePage /> : <Navigate to="/login" replace />
         } />
-        <Route path="/reports/:id/comments" element={<ReportCommentsPage />} />
+
       </Route>
 
       {/* Guest Only Routes (Auth) */}
