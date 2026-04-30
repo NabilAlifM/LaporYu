@@ -6,6 +6,7 @@ import LoginPrompt from '@/components/LoginPrompt';
 import SidebarComments from '@/components/SidebarComments';
 import { Home, Compass, Search, PlusSquare, User as UserIcon, MessageCircle, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PublicLayout() {
     const { user, isInitialized } = useAuthStore();
@@ -34,12 +35,18 @@ export default function PublicLayout() {
         { name: 'Profile', path: user ? '/profile' : '#', icon: UserIcon, action: !user ? openLoginPrompt : undefined },
     ];
 
+    const isExplore = location.pathname === '/explore';
+
     return (
-        <div className="min-h-screen bg-slate-50 md:bg-white flex justify-center">
-            <div className="w-full max-w-6xl flex">
+        <div className="min-h-screen bg-slate-50 md:bg-white flex justify-center overflow-x-hidden">
+            <motion.div 
+                animate={{ maxWidth: isExplore ? "100%" : "72rem" }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="w-full flex"
+            >
                 
                 {/* LEFT SIDEBAR (Desktop) */}
-                <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 h-screen sticky top-0 bg-white">
+                <aside className="hidden md:flex flex-col w-64 border-r border-slate-200 h-screen sticky top-0 bg-white shrink-0">
                     <div className="p-6">
                         <Link to="/" className="flex items-center space-x-2">
                             <img src="/Logo.png" alt="LaporYu Logo" className="h-10 w-auto" />
@@ -80,7 +87,7 @@ export default function PublicLayout() {
                 </aside>
 
                 {/* MAIN CONTENT (Middle Column) */}
-                <main className="flex-1 min-w-0 border-r border-slate-200 bg-slate-50 md:bg-white pb-20 md:pb-0">
+                <main className="flex-1 min-w-0 border-r border-slate-200 bg-slate-50 md:bg-white pb-20 md:pb-0 flex flex-col h-screen">
                     {/* Top Header Mobile & Desktop */}
                     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 px-4 flex items-center justify-between">
                         <div className="md:hidden flex items-center">
@@ -107,13 +114,13 @@ export default function PublicLayout() {
                         </div>
                     </header>
 
-                    <div className="p-0 sm:p-4 md:p-6 bg-slate-50 md:bg-white">
+                    <div className={`flex-1 overflow-y-auto ${isExplore ? 'p-0' : 'p-0 sm:p-4 md:p-6'} bg-slate-50 md:bg-white`}>
                         <Outlet />
                     </div>
                 </main>
 
                 {/* RIGHT SIDEBAR (Desktop) */}
-                <aside className="hidden lg:block w-80 h-screen sticky top-0 bg-white p-6 overflow-y-auto no-scrollbar relative">
+                <aside className="hidden lg:block w-80 h-screen sticky top-0 bg-white p-6 overflow-y-auto no-scrollbar relative shrink-0 border-l border-slate-200">
                     {/* Orang Yang Kau Follow */}
                     <div className="mb-8 relative group">
                         <h3 className="font-bold text-slate-900 mb-4">Orang Yang Kau Follow</h3>
@@ -170,7 +177,6 @@ export default function PublicLayout() {
                             </div>
                         </div>
                     </div>
-
                 </aside>
 
                 {/* Sliding Comments Panel (Desktop) */}
@@ -180,7 +186,7 @@ export default function PublicLayout() {
                     {isCommentsOpen && <SidebarComments />}
                 </div>
 
-            </div>
+            </motion.div>
 
             {/* BOTTOM NAVIGATION (Mobile) */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-16 z-40 pb-safe">

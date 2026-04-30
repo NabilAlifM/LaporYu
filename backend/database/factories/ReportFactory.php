@@ -19,11 +19,11 @@ class ReportFactory extends Factory
     {
         $topics = ['Jalan Berlubang di', 'Lampu Jalan Mati di', 'Tumpukan Sampah di', 'Saluran Air Mampet di', 'Fasilitas Taman Rusak di', 'Pohon Tumbang di'];
         $locations = [
-            ['city' => 'Tangerang Selatan', 'area' => 'Ciputat'],
-            ['city' => 'Tangerang Selatan', 'area' => 'Pondok Ranji'],
-            ['city' => 'Tangerang Selatan', 'area' => 'Pamulang'],
-            ['city' => 'Jakarta', 'area' => 'Sudirman'],
-            ['city' => 'Bandung', 'area' => 'Dago'],
+            ['city' => 'Tangerang Selatan', 'area' => 'Ciputat', 'lat' => -6.3134, 'lng' => 106.7490],
+            ['city' => 'Tangerang Selatan', 'area' => 'Pondok Ranji', 'lat' => -6.2825, 'lng' => 106.7454],
+            ['city' => 'Tangerang Selatan', 'area' => 'Pamulang', 'lat' => -6.3458, 'lng' => 106.7381],
+            ['city' => 'Jakarta', 'area' => 'Sudirman', 'lat' => -6.2238, 'lng' => 106.8080],
+            ['city' => 'Bandung', 'area' => 'Dago', 'lat' => -6.8841, 'lng' => 107.6160],
         ];
         
         $loc = fake()->randomElement($locations);
@@ -43,8 +43,8 @@ class ReportFactory extends Factory
             'judul' => $topic,
             'deskripsi' => fake()->randomElement($descriptions),
             'kategori' => fake()->randomElement(\App\Models\Report::getKategoriList()),
-            'latitude' => fake()->latitude(-10, 5),
-            'longitude' => fake()->longitude(95, 140),
+            'latitude' => $loc['lat'] + (mt_rand(-50, 50) / 10000),
+            'longitude' => $loc['lng'] + (mt_rand(-50, 50) / 10000),
             'kelurahan' => $loc['area'],
             'kecamatan' => $loc['area'],
             'kota' => $loc['city'],
