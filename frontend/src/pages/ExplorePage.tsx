@@ -194,6 +194,15 @@ export default function ExplorePage() {
                         <div className="p-5">
                             <div className="flex items-start justify-between mb-2">
                                 <h2 className="text-xl font-bold text-slate-900 leading-tight pr-4">{activeReport.judul}</h2>
+                                {(() => {
+                                    switch (activeReport.status) {
+                                        case 'baru': return <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider border border-slate-200 shrink-0">Baru</span>;
+                                        case 'diproses': return <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider border border-amber-200 shrink-0">Sedang Dikerjakan</span>;
+                                        case 'selesai': return <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider border border-emerald-200 shrink-0">Selesai</span>;
+                                        case 'ditolak': return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider border border-red-200 shrink-0">Ditolak</span>;
+                                        default: return null;
+                                    }
+                                })()}
                             </div>
                             
                             <p className="text-sm text-slate-500 flex items-center mb-4">

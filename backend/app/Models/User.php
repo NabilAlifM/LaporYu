@@ -43,6 +43,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Conversation::class, 'conversation_user');
     }
 
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id');
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

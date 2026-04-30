@@ -39,9 +39,7 @@ function App() {
         <Route path="/create" element={
           user ? <CreateReportPage /> : <Navigate to="/login" replace />
         } />
-        <Route path="/messages" element={
-          user ? <MessagesPage /> : <Navigate to="/login" replace />
-        } />
+        <Route path="/messages" element={<MessagesPage />} />
 
       </Route>
 

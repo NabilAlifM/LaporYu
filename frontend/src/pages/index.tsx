@@ -299,6 +299,43 @@ export function DashboardPage() {
 
     const reports = Array.isArray(response?.data) ? response.data : [];
 
+    const { data: followings = [] } = useQuery<any[]>({
+        queryKey: ['following'],
+        queryFn: async () => {
+            const res = await axios.get('/api/user/following');
+            return res.data;
+        },
+        enabled: !!user,
+    });
+
+    const followMutation = useMutation({
+        mutationFn: async (userId: number) => {
+            await axios.post(`/api/users/${userId}/follow`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['following'] });
+        }
+    });
+
+    const unfollowMutation = useMutation({
+        mutationFn: async (userId: number) => {
+            await axios.delete(`/api/users/${userId}/follow`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['following'] });
+        }
+    });
+
+    const handleFollowToggle = (targetUserId: number) => {
+        if (!user || !targetUserId) return;
+        const isFollowing = Array.isArray(followings) && followings.some((f: any) => f.id === targetUserId);
+        if (isFollowing) {
+            unfollowMutation.mutate(targetUserId);
+        } else {
+            followMutation.mutate(targetUserId);
+        }
+    };
+
     const upvoteMutation = useMutation({
         mutationFn: async (reportId: number) => {
             const res = await axios.post(`/api/reports/${reportId}/upvote`);
@@ -428,6 +465,16 @@ export function DashboardPage() {
         return logos[kota] || '/Logo.png';
     };
 
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'baru': return <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider ml-2 border border-slate-200">Baru</span>;
+            case 'diproses': return <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider ml-2 border border-amber-200">Sedang Dikerjakan</span>;
+            case 'selesai': return <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider ml-2 border border-emerald-200">Selesai</span>;
+            case 'ditolak': return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider ml-2 border border-red-200">Ditolak</span>;
+            default: return null;
+        }
+    };
+
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             {reports.map((report) => (
@@ -436,17 +483,37 @@ export function DashboardPage() {
                     <div className="flex items-center justify-between p-4">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-secondary to-primary p-[2px]">
-                                <div className="w-full h-full bg-white rounded-full border-2 border-white flex items-center justify-center font-bold text-primary text-xs">
-                                    {report.is_anonymous ? 'A' : report.user?.name?.charAt(0) || '?'}
+                                <div className="w-full h-full bg-white rounded-full border-2 border-white flex items-center justify-center font-bold text-primary text-xs overflow-hidden">
+                                    {report.is_anonymous ? 'A' : (
+                                        report.user?.avatar 
+                                            ? <img src={report.user.avatar} className="w-full h-full object-cover" /> 
+                                            : report.user?.name?.charAt(0) || '?'
+                                    )}
                                 </div>
                             </div>
-                            <span className="font-bold text-slate-900 text-sm">
-                                {report.is_anonymous ? 'Warga Anonim' : report.user?.name}
-                            </span>
+                            <div className="flex flex-col">
+                                <div className="flex items-center">
+                                    <span className="font-bold text-slate-900 text-sm">
+                                        {report.is_anonymous ? 'Warga Anonim' : report.user?.name}
+                                    </span>
+                                    {getStatusLabel(report.status)}
+                                </div>
+                                <span className="text-xs text-slate-500">{new Date(report.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                            </div>
                         </div>
-                        <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors">
-                            Follow
-                        </button>
+                        {user && report.user_id !== user.id && !report.is_anonymous && (
+                            <button 
+                                onClick={() => handleFollowToggle(report.user_id)}
+                                disabled={followMutation.isPending || unfollowMutation.isPending}
+                                className={`${
+                                    followings.some(f => f.id === report.user_id) 
+                                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' 
+                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                } px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50`}
+                            >
+                                {followings.some(f => f.id === report.user_id) ? 'Mengikuti' : 'Follow'}
+                            </button>
+                        )}
                     </div>
 
                     {/* Card Media (Image) */}

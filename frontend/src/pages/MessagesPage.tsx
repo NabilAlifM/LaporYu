@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, MoreVertical, Send, Image as ImageIcon, Smile, Phone, Video, Info, CheckCheck, MapPin, Bell, Mic, FileText, Paperclip } from 'lucide-react';
+import { Search, MoreVertical, Send, Image as ImageIcon, Smile, Phone, Video, Info, CheckCheck, MapPin, Bell, Mic, FileText, Paperclip, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from '@/lib/axios';
+import { useAuthStore } from '@/store/authStore';
 
 interface Contact {
     id: number;
+    contact_id: number;
     name: string;
     avatar: string;
     lastMessage: string;
@@ -13,79 +17,65 @@ interface Contact {
     type: 'warga' | 'instansi';
 }
 
-const contacts: Contact[] = [
-    {
-        id: 1,
-        name: 'Budi Santoso',
-        avatar: 'https://i.pravatar.cc/150?u=budi',
-        lastMessage: 'Bagaimana perkembangan laporan jalan berlubang di Ciputat?',
-        time: '10:30',
-        unread: 2,
-        online: true,
-        type: 'warga'
-    },
-    {
-        id: 4,
-        name: 'Dinas PUPR',
-        avatar: '/pupr.png',
-        lastMessage: 'Laporan Anda sedang diproses oleh tim teknis kami.',
-        time: 'Senin',
-        unread: 1,
-        online: true,
-        type: 'instansi'
-    },
-    {
-        id: 2,
-        name: 'Siti Aminah',
-        avatar: 'https://i.pravatar.cc/150?u=siti',
-        lastMessage: 'Terima kasih atas bantuannya kemarin.',
-        time: 'Kemarin',
-        unread: 0,
-        online: false,
-        type: 'warga'
-    },
-    {
-        id: 3,
-        name: 'Adam Mahardika',
-        avatar: 'https://i.pravatar.cc/150?u=adam',
-        lastMessage: 'Ok, saya tunggu infonya.',
-        time: 'Kemarin',
-        unread: 0,
-        online: true,
-        type: 'warga'
-    },
-    {
-        id: 5,
-        name: 'Dinas Kebersihan',
-        avatar: '/hutan.png',
-        lastMessage: 'Besok kita cek bareng ya lokasinya.',
-        time: '24 Apr',
-        unread: 0,
-        online: false,
-        type: 'instansi'
-    }
-];
-
 export default function MessagesPage() {
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(contacts[0]);
+    const { user } = useAuthStore();
+    const queryClient = useQueryClient();
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [messageInput, setMessageInput] = useState('');
     const [showInfo, setShowInfo] = useState(false);
     const [activeTab, setActiveTab] = useState<'all' | 'warga' | 'instansi'>('all');
     const [isTyping, setIsTyping] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [messages, setMessages] = useState<Record<number, any[]>>({
-        1: [
-            { id: 1, text: 'Halo! Apa ada yang bisa saya bantu terkait laporan jalan berlubang Anda?', sender: 'them', time: '09:45', type: 'text' },
-            { id: 2, text: 'Iya pak, di daerah Ciputat jalannya sangat parah. Kira-kira kapan ya diperbaiki?', sender: 'me', time: '10:02', type: 'text' },
-            { id: 3, text: 'Bagaimana perkembangan laporan jalan berlubang di Ciputat?', sender: 'them', time: '10:30', type: 'text' },
-        ],
-        4: [
-            { id: 1, text: 'Selamat siang. Kami telah menerima laporan Anda mengenai kerusakan jembatan.', sender: 'them', time: '09:00', type: 'text' },
-            { id: 2, text: 'Ini adalah foto lokasi terbarunya.', sender: 'me', time: '09:05', type: 'text' },
-            { id: 3, image: '/fasilitas rusak.jpeg', sender: 'me', time: '09:05', type: 'image' },
-            { id: 4, text: 'Laporan Anda sedang diproses oleh tim teknis kami.', sender: 'them', time: 'Senin', type: 'text' },
-        ]
+
+    // Fetch conversations
+    const { data: contacts = [] } = useQuery<Contact[]>({
+        queryKey: ['conversations'],
+        queryFn: async () => {
+            const res = await axios.get('/api/conversations');
+            return res.data;
+        },
+        enabled: !!user,
+    });
+
+    // Fetch messages for selected contact
+    const { data: currentMessages = [] } = useQuery<any[]>({
+        queryKey: ['messages', selectedContact?.contact_id],
+        queryFn: async () => {
+            if (!selectedContact?.contact_id) return [];
+            try {
+                const res = await axios.get(`/api/conversations/${selectedContact.contact_id}`);
+                return res.data?.messages || [];
+            } catch (err) {
+                console.error("Error fetching messages:", err);
+                return [];
+            }
+        },
+        enabled: !!selectedContact?.contact_id,
+        refetchInterval: 5000, // simple polling
+    });
+
+    const sendMessageMutation = useMutation({
+        mutationFn: async (text: string) => {
+            if (!selectedContact) return;
+            const res = await axios.post(`/api/conversations/${selectedContact.contact_id}/messages`, { text });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['messages', selectedContact?.contact_id] });
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
+            setMessageInput('');
+        }
+    });
+
+    const deleteMessageMutation = useMutation({
+        mutationFn: async (messageId: number) => {
+            await axios.delete(`/api/messages/${messageId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['messages', selectedContact?.contact_id] });
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        }
     });
 
     const filteredContacts = contacts.filter(c => {
@@ -99,19 +89,7 @@ export default function MessagesPage() {
         if (e) e.preventDefault();
         if (!messageInput.trim() || !selectedContact) return;
 
-        const newMessage = {
-            id: Date.now(),
-            text: messageInput,
-            sender: 'me',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            type: 'text'
-        };
-
-        setMessages(prev => ({
-            ...prev,
-            [selectedContact.id]: [...(prev[selectedContact.id] || []), newMessage]
-        }));
-        setMessageInput('');
+        sendMessageMutation.mutate(messageInput);
         
         // Mock typing effect
         setTimeout(() => {
@@ -124,12 +102,12 @@ export default function MessagesPage() {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages, selectedContact, isTyping]);
+    }, [currentMessages, selectedContact, isTyping]);
 
     return (
-        <div className="w-full max-w-7xl mx-auto h-[calc(100vh-8rem)] bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex animate-in fade-in zoom-in duration-500">
+        <div className="w-full h-full bg-white shadow-none md:shadow-2xl md:rounded-l-3xl border-0 md:border-l border-slate-200 overflow-hidden flex animate-in fade-in zoom-in duration-500 relative">
             {/* Sidebar: Chat List */}
-            <div className="w-full sm:w-80 border-r border-slate-100 flex flex-col bg-slate-50/50">
+            <div className={`${selectedContact ? 'hidden md:flex' : 'flex'} w-full md:w-80 border-r border-slate-100 flex-col bg-slate-50/50 absolute md:relative inset-0 z-10 md:z-auto h-full`}>
                 <div className="p-5 border-b border-slate-100 bg-white">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-2xl font-black text-slate-900">Pesan</h1>
@@ -179,7 +157,7 @@ export default function MessagesPage() {
                                 }`}
                             >
                                 {selectedContact?.id === contact.id && (
-                                    <motion.div layoutId="active-pill" className="absolute left-0 top-4 bottom-4 w-1.5 bg-primary rounded-r-full" />
+                                    <motion.div layoutId="active-pill" className="absolute left-0 top-4 bottom-4 w-1.5 bg-primary rounded-r-full hidden md:block" />
                                 )}
                                 
                                 <div className="relative flex-shrink-0">
@@ -213,10 +191,16 @@ export default function MessagesPage() {
             {/* Main: Chat View */}
             {selectedContact ? (
                 <>
-                    <div className="flex-1 flex flex-col bg-white">
+                    <div className="flex-1 flex flex-col bg-white w-full h-full">
                         {/* Chat Header */}
                         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-3">
+                                <button 
+                                    onClick={() => setSelectedContact(null)}
+                                    className="md:hidden p-2 -ml-2 text-slate-400 hover:text-primary transition-colors"
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
                                 <div className="relative">
                                     <img src={selectedContact.avatar} alt={selectedContact.name} className="w-10 h-10 rounded-xl object-cover border border-slate-100" />
                                     {selectedContact.online && <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>}
@@ -230,8 +214,8 @@ export default function MessagesPage() {
                                 </div>
                             </div>
                             <div className="flex items-center space-x-1">
-                                <button className="p-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"><Phone size={18} /></button>
-                                <button className="p-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"><Video size={18} /></button>
+                                <button className="hidden sm:block p-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"><Phone size={18} /></button>
+                                <button className="hidden sm:block p-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"><Video size={18} /></button>
                                 <button 
                                     onClick={() => setShowInfo(!showInfo)}
                                     className={`p-2.5 rounded-xl transition-all ${showInfo ? 'bg-primary/10 text-primary' : 'text-slate-400 hover:bg-slate-50'}`}
@@ -245,16 +229,16 @@ export default function MessagesPage() {
                         {/* Messages Area */}
                         <div 
                             ref={scrollRef}
-                            className="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-slate-50/20 no-scrollbar scroll-smooth"
+                            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50 no-scrollbar scroll-smooth"
                         >
-                            {messages[selectedContact.id]?.map((msg) => (
+                            {currentMessages.map((msg) => (
                                 <motion.div 
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     key={msg.id} 
                                     className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    <div className={`max-w-[75%] group relative ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}>
+                                    <div className={`max-w-[85%] sm:max-w-[75%] group relative ${msg.sender === 'me' ? 'items-end' : 'items-start'}`}>
                                         <div className={`p-3.5 rounded-3xl shadow-sm ${
                                             msg.sender === 'me' 
                                                 ? 'bg-primary text-white rounded-tr-none shadow-xl shadow-primary/10' 
@@ -283,6 +267,15 @@ export default function MessagesPage() {
                                                     {msg.time}
                                                 </span>
                                                 {msg.sender === 'me' && <CheckCheck size={12} className="text-blue-100" />}
+                                                {msg.sender === 'me' && (
+                                                    <button 
+                                                        onClick={() => deleteMessageMutation.mutate(msg.id)}
+                                                        className="ml-2 text-white/50 hover:text-white transition-colors"
+                                                        title="Hapus pesan"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -301,9 +294,9 @@ export default function MessagesPage() {
                         </div>
 
                         {/* Chat Input */}
-                        <div className="p-5 border-t border-slate-100 bg-white">
-                            <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
-                                <div className="flex items-center space-x-1">
+                        <div className="p-3 sm:p-5 border-t border-slate-100 bg-white">
+                            <form onSubmit={handleSendMessage} className="flex items-center space-x-2 sm:space-x-3">
+                                <div className="hidden sm:flex items-center space-x-1">
                                     <button type="button" className="p-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"><Smile size={20} /></button>
                                     <button type="button" className="p-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 rounded-xl transition-all"><Paperclip size={20} /></button>
                                 </div>
@@ -312,14 +305,14 @@ export default function MessagesPage() {
                                         type="text" 
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
-                                        placeholder="Tulis pesan Anda di sini..."
+                                        placeholder="Tulis pesan..."
                                         className="w-full bg-slate-100/80 border-none rounded-2xl px-5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                     />
                                     <button type="button" className="absolute right-3 text-slate-400 hover:text-primary"><Mic size={18} /></button>
                                 </div>
                                 <button 
                                     type="submit"
-                                    className={`p-3.5 rounded-2xl transition-all shadow-lg ${
+                                    className={`p-3.5 rounded-2xl transition-all shadow-lg shrink-0 ${
                                         messageInput.trim() 
                                             ? 'bg-primary text-white scale-105 shadow-primary/20 hover:shadow-primary/40' 
                                             : 'bg-slate-100 text-slate-300 shadow-none'
@@ -335,8 +328,14 @@ export default function MessagesPage() {
                     <motion.div 
                         initial={false}
                         animate={{ width: showInfo ? 320 : 0, opacity: showInfo ? 1 : 0 }}
-                        className="border-l border-slate-100 bg-white overflow-hidden flex flex-col shrink-0"
+                        className="border-l border-slate-100 bg-white overflow-hidden flex flex-col shrink-0 absolute right-0 top-0 bottom-0 z-20 md:relative shadow-2xl md:shadow-none"
                     >
+                        <div className="p-4 border-b border-slate-50 flex items-center justify-between md:hidden">
+                            <h3 className="font-bold text-slate-900">Info Kontak</h3>
+                            <button onClick={() => setShowInfo(false)} className="p-2 text-slate-400">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </button>
+                        </div>
                         <div className="p-8 flex flex-col items-center text-center border-b border-slate-50">
                             <img src={selectedContact.avatar} alt={selectedContact.name} className="w-28 h-28 rounded-[2rem] object-cover border-4 border-white shadow-2xl mb-6" />
                             <h3 className="font-black text-slate-900 text-xl mb-1">{selectedContact.name}</h3>
@@ -411,7 +410,7 @@ export default function MessagesPage() {
                     </motion.div>
                 </>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/50 text-center p-10">
+                <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-slate-50/50 text-center p-10 h-full pb-32">
                     <div className="w-32 h-32 bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center mb-8 relative">
                         <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] animate-ping duration-[3000ms]"></div>
                         <Send size={48} className="text-primary rotate-12 relative z-10" />

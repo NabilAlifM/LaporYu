@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import LoginPrompt from '@/components/LoginPrompt';
@@ -7,12 +7,24 @@ import SidebarComments from '@/components/SidebarComments';
 import { Home, Compass, Search, PlusSquare, User as UserIcon, MessageCircle, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import axios from '@/lib/axios';
 
 export default function PublicLayout() {
     const { user, isInitialized } = useAuthStore();
     const { openLoginPrompt, isCommentsOpen, setIsCommentsOpen } = useUIStore();
     const location = useLocation();
+    const navigate = useNavigate();
     const followScrollRef = useRef<HTMLDivElement>(null);
+
+    const { data: followings = [] } = useQuery<any[]>({
+        queryKey: ['following'],
+        queryFn: async () => {
+            const res = await axios.get('/api/user/following');
+            return res.data;
+        },
+        enabled: !!user,
+    });
 
     const scrollFollow = (direction: 'left' | 'right') => {
         if (followScrollRef.current) {
@@ -36,12 +48,12 @@ export default function PublicLayout() {
         { name: 'Profile', path: user ? '/profile' : '#', icon: UserIcon, action: !user ? openLoginPrompt : undefined },
     ];
 
-    const isExplore = location.pathname === '/explore';
+    const isFullWidthPage = location.pathname === '/explore' || location.pathname === '/messages';
 
     return (
         <div className="min-h-screen bg-slate-50 md:bg-white flex justify-center overflow-x-hidden">
             <motion.div
-                animate={{ maxWidth: isExplore ? "100%" : "72rem" }}
+                animate={{ maxWidth: isFullWidthPage ? "100%" : "72rem" }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="w-full flex"
             >
@@ -121,7 +133,7 @@ export default function PublicLayout() {
                         </div>
                     </header>
 
-                    <div className={`flex-1 overflow-y-auto ${isExplore ? 'p-0' : 'p-0 sm:p-4 md:p-6'} bg-slate-50 md:bg-white`}>
+                    <div className={`flex-1 overflow-y-auto ${isFullWidthPage ? 'p-0' : 'p-0 sm:p-4 md:p-6'} bg-slate-50 md:bg-white`}>
                         <Outlet />
                     </div>
                 </main>
@@ -137,13 +149,7 @@ export default function PublicLayout() {
                                 ref={followScrollRef}
                                 className="flex space-x-6 overflow-x-auto pb-2 no-scrollbar scroll-smooth snap-x"
                             >
-                                { [
-                                    { name: 'Adam Mahardika', id: 1 },
-                                    { name: 'Siti Rahma', id: 2 },
-                                    { name: 'Budi Santoso', id: 3 },
-                                    { name: 'Diana Putri', id: 4 },
-                                    { name: 'Eko Wijaya', id: 5 }
-                                ].map((person) => (
+                                {followings.length > 0 ? followings.map((person) => (
                                     <div 
                                         key={person.id} 
                                         onClick={() => navigate('/messages')}
@@ -151,12 +157,25 @@ export default function PublicLayout() {
                                     >
                                         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-secondary to-primary p-[2px] mb-2 group-hover/item:scale-110 transition-transform">
                                             <div className="w-full h-full bg-white rounded-full border-2 border-white overflow-hidden">
-                                                <img src={`https://i.pravatar.cc/150?u=${person.id}`} className="w-full h-full object-cover" />
+                                                <img src={person.avatar} className="w-full h-full object-cover" />
                                             </div>
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-700 text-center truncate w-full group-hover/item:text-primary transition-colors">{person.name.split(' ')[0]}</span>
+                                        <span className="text-[10px] font-black text-slate-700 text-center truncate w-full group-hover/item:text-primary transition-colors">
+                                            {person.name?.split(' ')[0] || 'User'}
+                                        </span>
                                     </div>
-                                )) }
+                                )) : (
+                                    <div 
+                                        className="flex flex-col items-center flex-shrink-0 cursor-pointer snap-start w-[72px] group/item"
+                                    >
+                                        <div className="w-14 h-14 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center mb-2 group-hover/item:border-primary transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 group-hover/item:bg-primary/10 group-hover/item:text-primary transition-colors">
+                                                <PlusSquare size={16} />
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] font-black text-slate-500 text-center w-full leading-tight">Cari teman</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Scroll Buttons - Only visible on hover */}
