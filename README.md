@@ -84,4 +84,4 @@ Gunakan akun berikut untuk mencoba fitur di platform:
 ---
 
 ## 🤝 Kontribusi
-Dibuat dengan ❤️ untuk layanan publik yang lebih baik.
+Dibuat oleh Tim InginMenangNamunGemarScrolling untuk keperluan lomba yang I/O Fest.
