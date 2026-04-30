@@ -1,10 +1,12 @@
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
 import InstansiLayout from './layouts/InstansiLayout';
 import { LoginPage, RegisterPage, DashboardPage } from './pages';
+import { ProfilePage } from './pages/ProfilePage';
+import ReportCommentsPage from './pages/ReportCommentsPage';
 import { useAuthStore } from './store/authStore';
-import { useEffect } from 'react';
 
 function App() {
   const { fetchUser, isInitialized, user } = useAuthStore();
@@ -25,6 +27,10 @@ function App() {
         <Route path="/" element={
           user?.role === 'instansi' ? <Navigate to="/instansi/dashboard" replace /> : <DashboardPage />
         } />
+        <Route path="/profile" element={
+          user ? <ProfilePage /> : <Navigate to="/login" replace />
+        } />
+        <Route path="/reports/:id/comments" element={<ReportCommentsPage />} />
       </Route>
 
       {/* Guest Only Routes (Auth) */}

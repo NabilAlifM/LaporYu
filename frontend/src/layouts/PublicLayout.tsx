@@ -1,3 +1,4 @@
+import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -6,7 +7,7 @@ import { Home, Compass, Search, PlusSquare, User as UserIcon, MessageCircle, Bel
 
 export default function PublicLayout() {
     const { user, isInitialized } = useAuthStore();
-    const { openLoginPrompt } = useUIStore();
+    const { openLoginPrompt, isCommentsOpen, setIsCommentsOpen } = useUIStore();
     const location = useLocation();
 
     if (!isInitialized) {
@@ -102,7 +103,7 @@ export default function PublicLayout() {
                 </main>
 
                 {/* RIGHT SIDEBAR (Desktop) */}
-                <aside className="hidden lg:block w-80 h-screen sticky top-0 bg-white p-6 overflow-y-auto no-scrollbar">
+                <aside className="hidden lg:block w-80 h-screen sticky top-0 bg-white p-6 overflow-y-auto no-scrollbar relative">
                     {/* Orang Yang Kau Follow */}
                     <div className="mb-8">
                         <h3 className="font-bold text-slate-900 mb-4">Orang Yang Kau Follow</h3>
@@ -120,32 +121,22 @@ export default function PublicLayout() {
                         </div>
                     </div>
 
-                    {/* Komentar Terbaru */}
-                    <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-4">
-                        <h3 className="font-bold text-slate-900 mb-4">Komentar Terbaru</h3>
-                        <div className="space-y-4">
-                            <div className="flex space-x-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0 mt-1"></div>
-                                <div>
-                                    <p className="text-sm">
-                                        <span className="font-bold text-slate-900">Nabil Alif</span>{' '}
-                                        eh gimana sih pajak jalan tapi jalan bolong bolong
-                                    </p>
-                                </div>
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                        <h4 className="font-bold text-sm text-slate-800 mb-2">Statistik Hari Ini</h4>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-500">Laporan Baru</span>
+                                <span className="font-bold text-primary">12</span>
                             </div>
-                            
-                            <div className="flex space-x-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0 mt-1"></div>
-                                <div>
-                                    <p className="text-sm">
-                                        <span className="font-bold text-slate-900">Adam Mahardika</span>{' '}
-                                        iya nih bener banget, harus diviralkan biar gerak cepat.
-                                    </p>
-                                </div>
+                            <div className="flex justify-between text-xs">
+                                <span className="text-slate-500">Selesai</span>
+                                <span className="font-bold text-green-600">8</span>
                             </div>
                         </div>
                     </div>
+
                 </aside>
+
             </div>
 
             {/* BOTTOM NAVIGATION (Mobile) */}

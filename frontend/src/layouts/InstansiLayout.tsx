@@ -1,3 +1,4 @@
+import React from 'react';
 import { Outlet, Navigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { LogOut, Home, FileText, Settings, BarChart2 } from 'lucide-react';
@@ -47,10 +48,10 @@ export default function InstansiLayout() {
                 <div className="p-4 border-t border-slate-200">
                     <div className="flex items-center mb-4 px-2">
                         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold mr-3">
-                            {user.name.charAt(0)}
+                            {user.name?.charAt(0) || '?'}
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-medium truncate">{user.name}</p>
+                            <p className="text-sm font-medium truncate">{user.name || 'User'}</p>
                             <p className="text-xs text-slate-500 truncate capitalize">Instansi</p>
                         </div>
                     </div>

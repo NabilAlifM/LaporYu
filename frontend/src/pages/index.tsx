@@ -1,11 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from '@/lib/axios';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { Heart, MessageCircle, Send, MapPin, Image as ImageIcon, IdCard, Eye, EyeOff, ArrowBigUp, ArrowBigDown, MoreHorizontal, Share2, ArrowLeft } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getReports } from '@/services/api';
+import type { Report } from '@/types/index';
 
 export function LoginPage() {
     const [email, setEmail] = useState('');
@@ -286,12 +287,68 @@ export function RegisterPage() {
 
 export function DashboardPage() {
     const { user } = useAuthStore();
-    const { openLoginPrompt } = useUIStore();
+    const { openLoginPrompt, setActiveReportId, setIsCommentsOpen } = useUIStore();
+    const navigate = useNavigate();
 
     const { data: response, isLoading, isError, error } = useQuery({
         queryKey: ['reports'],
         queryFn: getReports
     });
+    
+    const queryClient = useQueryClient();
+
+    const reports = Array.isArray(response?.data) ? response.data : [];
+
+    const upvoteMutation = useMutation({
+        mutationFn: async (reportId: number) => {
+            const res = await axios.post(`/api/reports/${reportId}/upvote`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['reports'] });
+        }
+    });
+
+    const downvoteMutation = useMutation({
+        mutationFn: async (reportId: number) => {
+            const res = await axios.post(`/api/reports/${reportId}/downvote`);
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['reports'] });
+        }
+    });
+    
+    const observerRef = useRef<IntersectionObserver | null>(null);
+
+    useEffect(() => {
+        // Setup intersection observer
+        observerRef.current = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                    const id = entry.target.getAttribute('data-report-id');
+                    if (id) {
+                        setActiveReportId(parseInt(id));
+                    }
+                }
+            });
+        }, {
+            threshold: 0.51, // Trigger when >50% of the element is visible
+            rootMargin: "-10% 0px -10% 0px"
+        });
+
+        const timer = setTimeout(() => {
+            const articles = document.querySelectorAll('article[data-report-id]');
+            articles.forEach(article => observerRef.current?.observe(article));
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [reports, setActiveReportId]);
 
     if (isLoading) {
         return (
@@ -339,8 +396,6 @@ export function DashboardPage() {
         );
     }
 
-    const reports = response?.data || [];
-
     if (reports.length === 0) {
         return (
             <div className="max-w-2xl mx-auto text-center py-12 bg-white rounded-2xl border border-slate-200">
@@ -353,7 +408,7 @@ export function DashboardPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             {reports.map((report) => (
-                <article key={report.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <article key={report.id} data-report-id={report.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                     {/* Card Header */}
                     <div className="flex items-center justify-between p-4">
                         <div className="flex items-center space-x-3">
@@ -409,25 +464,37 @@ export function DashboardPage() {
                                 {/* Upvote/Downvote Pill (Quora Style) */}
                                 <div className="flex items-center bg-slate-100 hover:bg-slate-200/80 rounded-full transition-colors overflow-hidden border border-slate-200/50">
                                     <button 
-                                        onClick={!user ? openLoginPrompt : undefined}
-                                        className="flex items-center space-x-2 px-3 sm:px-4 py-2 text-slate-700 hover:text-blue-600 transition-colors border-r border-slate-200"
+                                        onClick={() => {
+                                            if (!user) openLoginPrompt();
+                                            else upvoteMutation.mutate(report.id);
+                                        }}
+                                        disabled={upvoteMutation.isPending}
+                                        className={`flex items-center space-x-2 px-3 sm:px-4 py-2 transition-colors border-r border-slate-200 ${
+                                            report.is_upvoted ? 'text-blue-600 bg-blue-50/50' : 'text-slate-700 hover:text-blue-600'
+                                        }`}
                                     >
-                                        <ArrowBigUp size={18} className="text-blue-600 fill-blue-600/10" strokeWidth={2.5} />
-                                        <span className="text-xs sm:text-sm font-semibold text-slate-700">
+                                        <ArrowBigUp size={18} className={`${report.is_upvoted ? 'fill-blue-600' : 'fill-blue-600/10'}`} strokeWidth={2.5} />
+                                        <span className="text-xs sm:text-sm font-semibold">
                                             Upvote <span className="mx-1 font-normal text-slate-400">·</span> {report.upvotes_count || 0}
                                         </span>
                                     </button>
                                     <button 
-                                        onClick={!user ? openLoginPrompt : undefined}
-                                        className="px-3 py-2 text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center"
+                                        onClick={() => {
+                                            if (!user) openLoginPrompt();
+                                            else downvoteMutation.mutate(report.id);
+                                        }}
+                                        disabled={downvoteMutation.isPending}
+                                        className={`px-3 py-2 transition-colors flex items-center justify-center ${
+                                            report.is_downvoted ? 'text-red-600 bg-red-50' : 'text-slate-500 hover:text-red-500 hover:bg-red-50'
+                                        }`}
                                     >
-                                        <ArrowBigDown size={18} />
+                                        <ArrowBigDown size={18} className={`${report.is_downvoted ? 'fill-red-600' : ''}`} />
                                     </button>
                                 </div>
 
                                 {/* Comment Button */}
                                 <button 
-                                    onClick={!user ? openLoginPrompt : undefined}
+                                    onClick={() => navigate(`/reports/${report.id}/comments`)}
                                     className="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-800 transition-colors"
                                 >
                                     <MessageCircle size={18} />

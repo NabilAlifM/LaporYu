@@ -44,6 +44,8 @@ export interface Report {
     status: string;
     is_anonymous?: boolean;
     upvotes_count: number;
+    is_upvoted?: boolean;
+    is_downvoted?: boolean;
     created_at: string;
     updated_at: string;
     

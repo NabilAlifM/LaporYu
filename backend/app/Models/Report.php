@@ -29,6 +29,22 @@ class Report extends Model
         ];
     }
 
+    protected $appends = ['is_upvoted', 'is_downvoted'];
+
+    public function getIsUpvotedAttribute()
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) return false;
+        return $this->upvotes()->where('user_id', $user->id)->exists();
+    }
+
+    public function getIsDownvotedAttribute()
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) return false;
+        return $this->downvotes()->where('user_id', $user->id)->exists();
+    }
+
     protected $fillable = [
         'user_id',
         'judul',
@@ -70,6 +86,11 @@ class Report extends Model
     public function upvotes()
     {
         return $this->hasMany(Upvote::class);
+    }
+
+    public function downvotes()
+    {
+        return $this->hasMany(Downvote::class);
     }
 
     public function statusLogs()

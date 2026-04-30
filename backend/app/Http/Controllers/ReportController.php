@@ -12,7 +12,7 @@ class ReportController extends Controller
      */
     public function index()
     {
-        $reports = Report::with(['user', 'instansi', 'media', 'comments'])->latest()->paginate(15);
+        $reports = Report::with(['user', 'instansi', 'media', 'comments.user'])->latest()->paginate(15);
         return response()->json($reports);
     }
 

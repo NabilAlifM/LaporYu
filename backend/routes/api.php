@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\VoteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +20,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 
     Route::post('/reports', [ReportController::class, 'store']);
+    Route::post('/reports/{report}/comments', [CommentController::class, 'store']);
+    Route::post('/reports/{report}/upvote', [VoteController::class, 'toggleUpvote']);
+    Route::post('/reports/{report}/downvote', [VoteController::class, 'toggleDownvote']);
     Route::put('/reports/{report}', [ReportController::class, 'update']);
     Route::delete('/reports/{report}', [ReportController::class, 'destroy']);
 });
