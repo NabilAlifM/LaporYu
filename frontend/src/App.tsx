@@ -5,6 +5,9 @@ import PublicLayout from './layouts/PublicLayout';
 import InstansiLayout from './layouts/InstansiLayout';
 import { LoginPage, RegisterPage, DashboardPage } from './pages';
 import { ProfilePage } from './pages/ProfilePage';
+import ExplorePage from './pages/ExplorePage';
+import SearchPage from './pages/SearchPage';
+import CreateReportPage from './pages/CreateReportPage';
 
 import { useAuthStore } from './store/authStore';
 
@@ -29,6 +32,11 @@ function App() {
         } />
         <Route path="/profile" element={
           user ? <ProfilePage /> : <Navigate to="/login" replace />
+        } />
+        <Route path="/explore" element={<ExplorePage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/create" element={
+          user ? <CreateReportPage /> : <Navigate to="/login" replace />
         } />
 
       </Route>
